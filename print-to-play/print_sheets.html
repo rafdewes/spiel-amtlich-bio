@@ -1,0 +1,4755 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>AMTLICH! Das biometrische Bürgeramt - Print-to-Play Druckbögen</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 8mm 10mm 8mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #e2e8f0;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    .no-print-bar {
+      background: #1e3a8a;
+      color: #ffffff;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    }
+
+    .no-print-bar button {
+      background: #f59e0b;
+      color: #0f172a;
+      border: none;
+      font-weight: bold;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 8mm 8mm;
+      margin: 15px auto;
+      background: #ffffff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      page-break-after: always;
+      position: relative;
+    }
+
+    .page-header {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #1e3a8a;
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 3mm;
+      margin-bottom: 4mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .page-header span {
+      font-size: 8pt;
+      color: #64748b;
+      font-weight: normal;
+    }
+
+    /* 3x3 Card Grid for Standard Card Sheet (63x88mm approx) */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 2.5mm;
+      width: 100%;
+      height: 260mm;
+    }
+
+    .pnp-card {
+      border: 1.5px dashed #64748b;
+      border-radius: 4mm;
+      padding: 3.5mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #ffffff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-type-hilfe { border-top: 5px solid #059669; }
+    .card-type-organisation { border-top: 5px solid #2563eb; }
+    .card-type-störfall { border-top: 5px solid #dc2626; }
+    .card-type-reaktion { border-top: 5px solid #d97706; }
+    .card-type-personal { border-top: 5px solid #4338ca; }
+    .card-type-digitalisierung { border-top: 5px solid #0891b2; }
+    .card-type-infrastruktur { border-top: 5px solid #475569; }
+    .card-type-schulung { border-top: 5px solid #7c3aed; }
+    .card-type-antrag { border-top: 5px solid #ea580c; }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5mm;
+    }
+
+    .card-type-tag {
+      font-size: 6.5pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .card-cost {
+      font-size: 7.5pt;
+      font-weight: 800;
+      color: #1e3a8a;
+      background: #e0e7ff;
+      padding: 1px 5px;
+      border-radius: 8px;
+    }
+
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      gap: 1.5mm;
+      margin-bottom: 1.5mm;
+    }
+
+    .card-icon {
+      font-size: 13pt;
+      line-height: 1;
+    }
+
+    .card-name {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.15;
+    }
+
+    .card-subtitle {
+      font-size: 6.5pt;
+      color: #64748b;
+      margin-bottom: 1.5mm;
+    }
+
+    .card-tag-pill {
+      font-size: 6pt;
+      color: #2563eb;
+      font-weight: 600;
+      margin-bottom: 1mm;
+    }
+
+    .card-body {
+      font-size: 6.8pt;
+      color: #334155;
+      line-height: 1.25;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .card-flavor {
+      font-family: Georgia, serif;
+      font-style: italic;
+      color: #57534e;
+      font-size: 6.5pt;
+      margin-top: 1mm;
+    }
+
+    .card-footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 1.5mm;
+      margin-top: 1.5mm;
+      font-size: 6.5pt;
+      display: flex;
+      justify-content: space-between;
+      color: #64748b;
+    }
+
+    /* Player Tableau Layout */
+    .tableau-container {
+      border: 2.5px solid #0f172a;
+      border-radius: 5mm;
+      padding: 5mm;
+      height: 260mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #f8fafc;
+    }
+
+    .tableau-title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 3mm;
+    }
+
+    .tableau-title-bar h2 {
+      font-size: 16pt;
+      color: #0f172a;
+    }
+
+    .time-track-box {
+      display: flex;
+      gap: 3mm;
+      align-items: center;
+    }
+
+    .time-box-item {
+      border: 2px solid #1e3a8a;
+      background: #ffffff;
+      padding: 2mm 5mm;
+      border-radius: 4mm;
+      font-weight: 800;
+      font-size: 9pt;
+      color: #1e3a8a;
+    }
+
+    .tableau-desks-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4mm;
+      margin: 3mm 0;
+    }
+
+    .tableau-desk {
+      border: 2px solid #94a3b8;
+      background: #ffffff;
+      border-radius: 4mm;
+      padding: 4mm;
+      min-height: 85mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .tableau-desk h3 {
+      font-size: 10.5pt;
+      color: #1e3a8a;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 1.5mm;
+      margin-bottom: 2mm;
+    }
+
+    .desk-card-drop {
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 3mm;
+      height: 48mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8pt;
+      color: #94a3b8;
+      text-align: center;
+      padding: 3mm;
+      background: #f8fafc;
+    }
+
+    .desk-tokens-line {
+      font-size: 8pt;
+      font-weight: bold;
+      color: #b91c1c;
+      margin-top: 2mm;
+    }
+
+    .tableau-queue-row {
+      border: 2px solid #f59e0b;
+      border-radius: 4mm;
+      background: #ffffff;
+      padding: 3mm;
+      margin: 2mm 0;
+    }
+
+    .queue-thresh-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2mm;
+      margin-top: 2mm;
+      font-size: 7.5pt;
+    }
+
+    .queue-thresh-item {
+      padding: 2mm;
+      border-radius: 2mm;
+    }
+
+    .q-normal { background: #d1fae5; color: #065f46; }
+    .q-rush { background: #fef3c7; color: #92400e; }
+    .q-overload { background: #fee2e2; color: #991b1b; }
+
+    .tableau-mods-row {
+      border: 2px solid #475569;
+      border-radius: 4mm;
+      background: #ffffff;
+      padding: 3mm;
+    }
+
+    .mods-drop-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 3mm;
+      margin-top: 2mm;
+    }
+
+    .mod-drop-box {
+      border: 1.5px dashed #94a3b8;
+      border-radius: 3mm;
+      height: 32mm;
+      padding: 2mm;
+      font-size: 7.5pt;
+      text-align: center;
+      color: #64748b;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Tokens Sheet */
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      gap: 3mm;
+      height: 260mm;
+    }
+
+    .pnp-token {
+      border: 1.5px dashed #475569;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2mm;
+      font-size: 7pt;
+      font-weight: bold;
+    }
+
+    .token-mark { background: #fee2e2; color: #991b1b; }
+    .token-time { background: #dbeafe; color: #1e40af; }
+    .token-round { background: #fef3c7; color: #92400e; border-radius: 4mm; }
+    .token-start { background: #fde68a; color: #b45309; border-radius: 4mm; }
+
+    @media print {
+      body { background: #ffffff; }
+      .no-print-bar { display: none; }
+      .page { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="no-print-bar">
+    <div>
+      <strong>🏛️ AMTLICH! – Print-to-Play Druckcenter</strong> (A4 Druckbögen & Tableaus)
+    </div>
+    <button onclick="window.print()">🖨️ Jetzt Drucken / Als PDF speichern (Strg + P)</button>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🏛️ KOMMUNENTABLEAU: SPIELER 1</div>
+      <span>Vor den Spieler legen · 2 Personalplätze · 3 Modernisierungsplätze</span>
+    </div>
+    <div class="tableau-container">
+      <div class="tableau-title-bar">
+        <h2>🏛️ Bürgeramt Kommune 1</h2>
+        <div class="time-track-box">
+          <span>Zeit-Vorrat:</span>
+          <div class="time-box-item">⏱️ 1</div>
+          <div class="time-box-item">⏱️ 2</div>
+          <div class="time-box-item">⏱️ 3</div>
+        </div>
+      </div>
+
+      <div class="tableau-desks-row">
+        <div class="tableau-desk">
+          <h3>🏢 SCHREIBTISCH 1 (Personalplatz 1)</h3>
+          <div class="desk-card-drop">[ Personalkarte 1 hier anlegen ]</div>
+          <div class="desk-card-drop" style="margin-top: 2mm;">[ Aktiver Antrag mit Bearbeitungsmarken ]</div>
+          <div class="desk-tokens-line">Standard-Start: 🔴 🔴 (2 Marken) · Max. 2 Störfälle</div>
+        </div>
+
+        <div class="tableau-desk">
+          <h3>🏢 SCHREIBTISCH 2 (Personalplatz 2)</h3>
+          <div class="desk-card-drop">[ Personalkarte 2 hier anlegen ]</div>
+          <div class="desk-card-drop" style="margin-top: 2mm;">[ Aktiver Antrag mit Bearbeitungsmarken ]</div>
+          <div class="desk-tokens-line">Standard-Start: 🔴 🔴 (2 Marken) · Max. 2 Störfälle</div>
+        </div>
+      </div>
+
+      <div class="tableau-queue-row">
+        <strong>⏳ WARTESCHLANGE & WARTERAUM</strong> (Hier nicht zugewiesene Anträge in Reihe anlegen)
+        <div class="queue-thresh-grid">
+          <div class="queue-thresh-item q-normal"><strong>0–2: Normalbetrieb</strong><br/>Regulärer Dienstbetrieb.</div>
+          <div class="queue-thresh-item q-rush"><strong>3–4: Andrang ⚠️</strong><br/>Gegner-Störfälle kosten +1 Zeit. Triage aktiv.</div>
+          <div class="queue-thresh-item q-overload"><strong>5+: Überlastung 🚨</strong><br/>Erste eigene Hilfe-Aktion kostet -1 Zeit!</div>
+        </div>
+      </div>
+
+      <div class="tableau-mods-row">
+        <strong>⚙️ MODERNISIERUNGSPLÄTZE (Max. 3 Upgrades)</strong>
+        <div class="mods-drop-grid">
+          <div class="mod-drop-box"><strong>Platz 1</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+          <div class="mod-drop-box"><strong>Platz 2</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+          <div class="mod-drop-box"><strong>Platz 3</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🏛️ KOMMUNENTABLEAU: SPIELER 2</div>
+      <span>Vor den Spieler legen · 2 Personalplätze · 3 Modernisierungsplätze</span>
+    </div>
+    <div class="tableau-container">
+      <div class="tableau-title-bar">
+        <h2>🏛️ Bürgeramt Kommune 2</h2>
+        <div class="time-track-box">
+          <span>Zeit-Vorrat:</span>
+          <div class="time-box-item">⏱️ 1</div>
+          <div class="time-box-item">⏱️ 2</div>
+          <div class="time-box-item">⏱️ 3</div>
+        </div>
+      </div>
+
+      <div class="tableau-desks-row">
+        <div class="tableau-desk">
+          <h3>🏢 SCHREIBTISCH 1 (Personalplatz 1)</h3>
+          <div class="desk-card-drop">[ Personalkarte 1 hier anlegen ]</div>
+          <div class="desk-card-drop" style="margin-top: 2mm;">[ Aktiver Antrag mit Bearbeitungsmarken ]</div>
+          <div class="desk-tokens-line">Standard-Start: 🔴 🔴 (2 Marken) · Max. 2 Störfälle</div>
+        </div>
+
+        <div class="tableau-desk">
+          <h3>🏢 SCHREIBTISCH 2 (Personalplatz 2)</h3>
+          <div class="desk-card-drop">[ Personalkarte 2 hier anlegen ]</div>
+          <div class="desk-card-drop" style="margin-top: 2mm;">[ Aktiver Antrag mit Bearbeitungsmarken ]</div>
+          <div class="desk-tokens-line">Standard-Start: 🔴 🔴 (2 Marken) · Max. 2 Störfälle</div>
+        </div>
+      </div>
+
+      <div class="tableau-queue-row">
+        <strong>⏳ WARTESCHLANGE & WARTERAUM</strong> (Hier nicht zugewiesene Anträge in Reihe anlegen)
+        <div class="queue-thresh-grid">
+          <div class="queue-thresh-item q-normal"><strong>0–2: Normalbetrieb</strong><br/>Regulärer Dienstbetrieb.</div>
+          <div class="queue-thresh-item q-rush"><strong>3–4: Andrang ⚠️</strong><br/>Gegner-Störfälle kosten +1 Zeit. Triage aktiv.</div>
+          <div class="queue-thresh-item q-overload"><strong>5+: Überlastung 🚨</strong><br/>Erste eigene Hilfe-Aktion kostet -1 Zeit!</div>
+        </div>
+      </div>
+
+      <div class="tableau-mods-row">
+        <strong>⚙️ MODERNISIERUNGSPLÄTZE (Max. 3 Upgrades)</strong>
+        <div class="mods-drop-grid">
+          <div class="mod-drop-box"><strong>Platz 1</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+          <div class="mod-drop-box"><strong>Platz 2</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+          <div class="mod-drop-box"><strong>Platz 3</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🏛️ KOMMUNENTABLEAU: SPIELER 3</div>
+      <span>Vor den Spieler legen · 2 Personalplätze · 3 Modernisierungsplätze</span>
+    </div>
+    <div class="tableau-container">
+      <div class="tableau-title-bar">
+        <h2>🏛️ Bürgeramt Kommune 3</h2>
+        <div class="time-track-box">
+          <span>Zeit-Vorrat:</span>
+          <div class="time-box-item">⏱️ 1</div>
+          <div class="time-box-item">⏱️ 2</div>
+          <div class="time-box-item">⏱️ 3</div>
+        </div>
+      </div>
+
+      <div class="tableau-desks-row">
+        <div class="tableau-desk">
+          <h3>🏢 SCHREIBTISCH 1 (Personalplatz 1)</h3>
+          <div class="desk-card-drop">[ Personalkarte 1 hier anlegen ]</div>
+          <div class="desk-card-drop" style="margin-top: 2mm;">[ Aktiver Antrag mit Bearbeitungsmarken ]</div>
+          <div class="desk-tokens-line">Standard-Start: 🔴 🔴 (2 Marken) · Max. 2 Störfälle</div>
+        </div>
+
+        <div class="tableau-desk">
+          <h3>🏢 SCHREIBTISCH 2 (Personalplatz 2)</h3>
+          <div class="desk-card-drop">[ Personalkarte 2 hier anlegen ]</div>
+          <div class="desk-card-drop" style="margin-top: 2mm;">[ Aktiver Antrag mit Bearbeitungsmarken ]</div>
+          <div class="desk-tokens-line">Standard-Start: 🔴 🔴 (2 Marken) · Max. 2 Störfälle</div>
+        </div>
+      </div>
+
+      <div class="tableau-queue-row">
+        <strong>⏳ WARTESCHLANGE & WARTERAUM</strong> (Hier nicht zugewiesene Anträge in Reihe anlegen)
+        <div class="queue-thresh-grid">
+          <div class="queue-thresh-item q-normal"><strong>0–2: Normalbetrieb</strong><br/>Regulärer Dienstbetrieb.</div>
+          <div class="queue-thresh-item q-rush"><strong>3–4: Andrang ⚠️</strong><br/>Gegner-Störfälle kosten +1 Zeit. Triage aktiv.</div>
+          <div class="queue-thresh-item q-overload"><strong>5+: Überlastung 🚨</strong><br/>Erste eigene Hilfe-Aktion kostet -1 Zeit!</div>
+        </div>
+      </div>
+
+      <div class="tableau-mods-row">
+        <strong>⚙️ MODERNISIERUNGSPLÄTZE (Max. 3 Upgrades)</strong>
+        <div class="mods-drop-grid">
+          <div class="mod-drop-box"><strong>Platz 1</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+          <div class="mod-drop-box"><strong>Platz 2</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+          <div class="mod-drop-box"><strong>Platz 3</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🏛️ KOMMUNENTABLEAU: SPIELER 4</div>
+      <span>Vor den Spieler legen · 2 Personalplätze · 3 Modernisierungsplätze</span>
+    </div>
+    <div class="tableau-container">
+      <div class="tableau-title-bar">
+        <h2>🏛️ Bürgeramt Kommune 4</h2>
+        <div class="time-track-box">
+          <span>Zeit-Vorrat:</span>
+          <div class="time-box-item">⏱️ 1</div>
+          <div class="time-box-item">⏱️ 2</div>
+          <div class="time-box-item">⏱️ 3</div>
+        </div>
+      </div>
+
+      <div class="tableau-desks-row">
+        <div class="tableau-desk">
+          <h3>🏢 SCHREIBTISCH 1 (Personalplatz 1)</h3>
+          <div class="desk-card-drop">[ Personalkarte 1 hier anlegen ]</div>
+          <div class="desk-card-drop" style="margin-top: 2mm;">[ Aktiver Antrag mit Bearbeitungsmarken ]</div>
+          <div class="desk-tokens-line">Standard-Start: 🔴 🔴 (2 Marken) · Max. 2 Störfälle</div>
+        </div>
+
+        <div class="tableau-desk">
+          <h3>🏢 SCHREIBTISCH 2 (Personalplatz 2)</h3>
+          <div class="desk-card-drop">[ Personalkarte 2 hier anlegen ]</div>
+          <div class="desk-card-drop" style="margin-top: 2mm;">[ Aktiver Antrag mit Bearbeitungsmarken ]</div>
+          <div class="desk-tokens-line">Standard-Start: 🔴 🔴 (2 Marken) · Max. 2 Störfälle</div>
+        </div>
+      </div>
+
+      <div class="tableau-queue-row">
+        <strong>⏳ WARTESCHLANGE & WARTERAUM</strong> (Hier nicht zugewiesene Anträge in Reihe anlegen)
+        <div class="queue-thresh-grid">
+          <div class="queue-thresh-item q-normal"><strong>0–2: Normalbetrieb</strong><br/>Regulärer Dienstbetrieb.</div>
+          <div class="queue-thresh-item q-rush"><strong>3–4: Andrang ⚠️</strong><br/>Gegner-Störfälle kosten +1 Zeit. Triage aktiv.</div>
+          <div class="queue-thresh-item q-overload"><strong>5+: Überlastung 🚨</strong><br/>Erste eigene Hilfe-Aktion kostet -1 Zeit!</div>
+        </div>
+      </div>
+
+      <div class="tableau-mods-row">
+        <strong>⚙️ MODERNISIERUNGSPLÄTZE (Max. 3 Upgrades)</strong>
+        <div class="mods-drop-grid">
+          <div class="mod-drop-box"><strong>Platz 1</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+          <div class="mod-drop-box"><strong>Platz 2</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+          <div class="mod-drop-box"><strong>Platz 3</strong><br/>Digitalisierung / Infrastruktur / Schulung</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>👨‍💼 PERSONALKARTEN (12 Profile) (Seite 1/2)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Aylin Demir</div>
+          </div>
+          <div class="card-subtitle">Biometrie-Lotsin & FIDO2-Spezialistin</div>
+          <div class="card-tag-pill">🔖 Digitalisierung · Schnelle Zuweisung</div>
+        </div>
+        <div class="card-body">
+          <div>Sobald eine Digitalisierung aktiv ist, startet der erste ihr pro Runde zugewiesene Antrag mit 1 Bearbeitungsmarke weniger (1 statt 2).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Bernd Peters</div>
+          </div>
+          <div class="card-subtitle">Publikumsliebling & Scanner-Flüsterer</div>
+          <div class="card-tag-pill">🔖 Störfall-Schutz · Deeskalation</div>
+        </div>
+        <div class="card-body">
+          <div>Ein fremder Störfall gegen seinen Schreibtisch kostet die ausspielende Kommune 1 zusätzliche Zeit.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Claudia Reuter</div>
+          </div>
+          <div class="card-subtitle">Dienst nach ICAO-Norm</div>
+          <div class="card-tag-pill">🔖 Schadensbegrenzung · Vorschrift</div>
+        </div>
+        <div class="card-body">
+          <div>Der erste Störfall an ihrem Schreibtisch darf höchstens 1 zusätzliche Marke verursachen und keine Bearbeitungsphase überspringen lassen.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Darius Wolf</div>
+          </div>
+          <div class="card-subtitle">Fortbildungsfan & Zertifikats-Sammler</div>
+          <div class="card-tag-pill">🔖 Schulungen · Effizienz</div>
+        </div>
+        <div class="card-body">
+          <div>Die erste Schulung an seinem Personalplatz kostet insgesamt 2 Zeit weniger.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Eleni Papadakis</div>
+          </div>
+          <div class="card-subtitle">Improvisationstalent & Sensor-Putzmeisterin</div>
+          <div class="card-tag-pill">🔖 Flexibilität · Platzwechsel</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde darfst du die aktiven Anträge deiner beiden Schreibtische kostenlos tauschen.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Frank Neumann</div>
+          </div>
+          <div class="card-subtitle">Ruhepol & Warteschlangen-Bändiger</div>
+          <div class="card-tag-pill">🔖 Andrang · Kostenreduktion</div>
+        </div>
+        <div class="card-body">
+          <div>Bei 3 oder mehr wartenden Anträgen (Andrang) sind eigene positive Aktionen auf seinen Schreibtisch 1 Zeit günstiger (mindestens 0 Zeit).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Gül Kaya</div>
+          </div>
+          <div class="card-subtitle">Triage-Profi & Schnell-Erfasserin</div>
+          <div class="card-tag-pill">🔖 Andrang · Schneller Durchsatz</div>
+        </div>
+        <div class="card-body">
+          <div>Bei 3 oder mehr wartenden Anträgen (Andrang) startet der nächste ihr zugewiesene Antrag mit 1 Marke weniger.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Hannes Vogt</div>
+          </div>
+          <div class="card-subtitle">Gründlicher Prüfer & DPI-Fetischist</div>
+          <div class="card-tag-pill">🔖 Markenschutz · Exaktheit</div>
+        </div>
+        <div class="card-body">
+          <div>Negative Aktionen können keine bereits entfernte Marke auf seinen Antrag zurücklegen (dürfen die Bearbeitung aber blockieren).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Isabel König</div>
+          </div>
+          <div class="card-subtitle">Springerin & Mobile-Station-Expertin</div>
+          <div class="card-tag-pill">🔖 Dynamik · Ausweichplatz</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde darf ein aktiver Antrag auf einen gerade frei gewordenen Personalplatz verschoben werden.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>👨‍💼 PERSONALKARTEN (12 Profile) (Seite 2/2)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Jonas Weber</div>
+          </div>
+          <div class="card-subtitle">Prozessdenker & Registervernetzer</div>
+          <div class="card-tag-pill">🔖 Infrastruktur · Doppelwirkung</div>
+        </div>
+        <div class="card-body">
+          <div>Die erste Infrastruktur, die seinen Schreibtisch betrifft, darf einmal pro Runde ein zweites Mal auslösen.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Karla Nguyen</div>
+          </div>
+          <div class="card-subtitle">Teamcoach & Fehlercode-Dolmetscherin</div>
+          <div class="card-tag-pill">🔖 Teamplay · Hilfsübertragung</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde darf eine positive Aktion statt auf ihren Schreibtisch auf den Antrag des anderen Schreibtischs wirken.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-personal">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Personal</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Mehmet Yilmaz</div>
+          </div>
+          <div class="card-subtitle">Routinier & Fingerabdruck-Veteran</div>
+          <div class="card-tag-pill">🔖 Störungsfreiheit · Doppelabzug</div>
+        </div>
+        <div class="card-body">
+          <div>Hat sein Antrag keinen angelegten Störfall, wird an jedem geraden Rundenende (Runde 2, 4, 6, 8) 1 zusätzliche Marke entfernt.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+<div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>⚙️ MODERNISIERUNGSVORRAT (36 Karten / 4 Sets) (Seite 1/4)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 5 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖥️</span>
+            <div class="card-name">Biometrische Voraberfassung (Self-Service-Terminal)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 1</div>
+        </div>
+        <div class="card-body">
+          <div>Der erste pro Runde zugewiesene Antrag startet mit 1 Marke weniger (1 statt 2).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🌐</span>
+            <div class="card-name">NOBID- & Bundesdruckerei-Live-Schnittstelle</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 1</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde darfst du das Hinzufügen einer Bearbeitungsmarke durch einen fremden Störfall verhindern.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🤖</span>
+            <div class="card-name">Automatisierte ICAO-Konformitätsprüfung</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 1</div>
+        </div>
+        <div class="card-body">
+          <div>Wenn du in deinem Zug nur den Pflichtantrag (1 Fall) annimmst, ziehe danach 1 Aktionskarte und lege 1 Handkarte ab.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖐️</span>
+            <div class="card-name">Modernes 4-Finger-Flachbettscanner-Terminal</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 1</div>
+        </div>
+        <div class="card-body">
+          <div>Die erste positive Aktion auf einen aktiven Antrag kostet pro Runde 1 Zeit weniger (mindestens 0 Zeit).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 5 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">💼</span>
+            <div class="card-name">Mobiler Biometrie-Koffer (Ausweichplatz)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 1</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Partie: Ein 3. Antrag darf für eine Runde als aktiv bearbeitet werden (zieht am Rundenende -1 Marke ab).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📱</span>
+            <div class="card-name">Smartes eID-Terminmanagement mit Push-Aufruf</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 1</div>
+        </div>
+        <div class="card-body">
+          <div>Für die Zustände Andrang und Überlastung zählt deine Warteschlange, als hätte sie 1 Antrag weniger. (Schlussmalus unverändert).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📚</span>
+            <div class="card-name">Fachverfahren „Pass/Ausweis 4.0“ kompakt</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 1</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde: Zahle 1 Zeit weniger für eine positive Aktion auf den zugeordneten Schreibtisch.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔍</span>
+            <div class="card-name">Umgang mit Sensor-Artefakten & Sonderfällen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 1</div>
+        </div>
+        <div class="card-body">
+          <div>Der erste Störfall pro Runde auf den zugeordneten Schreibtisch verliert seinen Nebeneffekt (reine Markenänderungen bleiben).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚡</span>
+            <div class="card-name">Biometrie-Triage & Arbeitsorganisation</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 1</div>
+        </div>
+        <div class="card-body">
+          <div>Bei Andrang (Warteschlange ≥ 3): Nach Abschluss eines Antrags darf sofort der nächste Fall nachrücken und verliert sofort 1 Marke.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>⚙️ MODERNISIERUNGSVORRAT (36 Karten / 4 Sets) (Seite 2/4)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 5 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖥️</span>
+            <div class="card-name">Biometrische Voraberfassung (Self-Service-Terminal)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 2</div>
+        </div>
+        <div class="card-body">
+          <div>Der erste pro Runde zugewiesene Antrag startet mit 1 Marke weniger (1 statt 2).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🌐</span>
+            <div class="card-name">NOBID- & Bundesdruckerei-Live-Schnittstelle</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 2</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde darfst du das Hinzufügen einer Bearbeitungsmarke durch einen fremden Störfall verhindern.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🤖</span>
+            <div class="card-name">Automatisierte ICAO-Konformitätsprüfung</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 2</div>
+        </div>
+        <div class="card-body">
+          <div>Wenn du in deinem Zug nur den Pflichtantrag (1 Fall) annimmst, ziehe danach 1 Aktionskarte und lege 1 Handkarte ab.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖐️</span>
+            <div class="card-name">Modernes 4-Finger-Flachbettscanner-Terminal</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 2</div>
+        </div>
+        <div class="card-body">
+          <div>Die erste positive Aktion auf einen aktiven Antrag kostet pro Runde 1 Zeit weniger (mindestens 0 Zeit).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 5 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">💼</span>
+            <div class="card-name">Mobiler Biometrie-Koffer (Ausweichplatz)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 2</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Partie: Ein 3. Antrag darf für eine Runde als aktiv bearbeitet werden (zieht am Rundenende -1 Marke ab).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📱</span>
+            <div class="card-name">Smartes eID-Terminmanagement mit Push-Aufruf</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 2</div>
+        </div>
+        <div class="card-body">
+          <div>Für die Zustände Andrang und Überlastung zählt deine Warteschlange, als hätte sie 1 Antrag weniger. (Schlussmalus unverändert).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📚</span>
+            <div class="card-name">Fachverfahren „Pass/Ausweis 4.0“ kompakt</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 2</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde: Zahle 1 Zeit weniger für eine positive Aktion auf den zugeordneten Schreibtisch.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔍</span>
+            <div class="card-name">Umgang mit Sensor-Artefakten & Sonderfällen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 2</div>
+        </div>
+        <div class="card-body">
+          <div>Der erste Störfall pro Runde auf den zugeordneten Schreibtisch verliert seinen Nebeneffekt (reine Markenänderungen bleiben).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚡</span>
+            <div class="card-name">Biometrie-Triage & Arbeitsorganisation</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 2</div>
+        </div>
+        <div class="card-body">
+          <div>Bei Andrang (Warteschlange ≥ 3): Nach Abschluss eines Antrags darf sofort der nächste Fall nachrücken und verliert sofort 1 Marke.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>⚙️ MODERNISIERUNGSVORRAT (36 Karten / 4 Sets) (Seite 3/4)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 5 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖥️</span>
+            <div class="card-name">Biometrische Voraberfassung (Self-Service-Terminal)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 3</div>
+        </div>
+        <div class="card-body">
+          <div>Der erste pro Runde zugewiesene Antrag startet mit 1 Marke weniger (1 statt 2).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🌐</span>
+            <div class="card-name">NOBID- & Bundesdruckerei-Live-Schnittstelle</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 3</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde darfst du das Hinzufügen einer Bearbeitungsmarke durch einen fremden Störfall verhindern.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🤖</span>
+            <div class="card-name">Automatisierte ICAO-Konformitätsprüfung</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 3</div>
+        </div>
+        <div class="card-body">
+          <div>Wenn du in deinem Zug nur den Pflichtantrag (1 Fall) annimmst, ziehe danach 1 Aktionskarte und lege 1 Handkarte ab.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖐️</span>
+            <div class="card-name">Modernes 4-Finger-Flachbettscanner-Terminal</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 3</div>
+        </div>
+        <div class="card-body">
+          <div>Die erste positive Aktion auf einen aktiven Antrag kostet pro Runde 1 Zeit weniger (mindestens 0 Zeit).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 5 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">💼</span>
+            <div class="card-name">Mobiler Biometrie-Koffer (Ausweichplatz)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 3</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Partie: Ein 3. Antrag darf für eine Runde als aktiv bearbeitet werden (zieht am Rundenende -1 Marke ab).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📱</span>
+            <div class="card-name">Smartes eID-Terminmanagement mit Push-Aufruf</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 3</div>
+        </div>
+        <div class="card-body">
+          <div>Für die Zustände Andrang und Überlastung zählt deine Warteschlange, als hätte sie 1 Antrag weniger. (Schlussmalus unverändert).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📚</span>
+            <div class="card-name">Fachverfahren „Pass/Ausweis 4.0“ kompakt</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 3</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde: Zahle 1 Zeit weniger für eine positive Aktion auf den zugeordneten Schreibtisch.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔍</span>
+            <div class="card-name">Umgang mit Sensor-Artefakten & Sonderfällen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 3</div>
+        </div>
+        <div class="card-body">
+          <div>Der erste Störfall pro Runde auf den zugeordneten Schreibtisch verliert seinen Nebeneffekt (reine Markenänderungen bleiben).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚡</span>
+            <div class="card-name">Biometrie-Triage & Arbeitsorganisation</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 3</div>
+        </div>
+        <div class="card-body">
+          <div>Bei Andrang (Warteschlange ≥ 3): Nach Abschluss eines Antrags darf sofort der nächste Fall nachrücken und verliert sofort 1 Marke.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>⚙️ MODERNISIERUNGSVORRAT (36 Karten / 4 Sets) (Seite 4/4)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 5 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖥️</span>
+            <div class="card-name">Biometrische Voraberfassung (Self-Service-Terminal)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 4</div>
+        </div>
+        <div class="card-body">
+          <div>Der erste pro Runde zugewiesene Antrag startet mit 1 Marke weniger (1 statt 2).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🌐</span>
+            <div class="card-name">NOBID- & Bundesdruckerei-Live-Schnittstelle</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 4</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde darfst du das Hinzufügen einer Bearbeitungsmarke durch einen fremden Störfall verhindern.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-digitalisierung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Digitalisierung</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🤖</span>
+            <div class="card-name">Automatisierte ICAO-Konformitätsprüfung</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 4</div>
+        </div>
+        <div class="card-body">
+          <div>Wenn du in deinem Zug nur den Pflichtantrag (1 Fall) annimmst, ziehe danach 1 Aktionskarte und lege 1 Handkarte ab.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖐️</span>
+            <div class="card-name">Modernes 4-Finger-Flachbettscanner-Terminal</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 4</div>
+        </div>
+        <div class="card-body">
+          <div>Die erste positive Aktion auf einen aktiven Antrag kostet pro Runde 1 Zeit weniger (mindestens 0 Zeit).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 5 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">💼</span>
+            <div class="card-name">Mobiler Biometrie-Koffer (Ausweichplatz)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 4</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Partie: Ein 3. Antrag darf für eine Runde als aktiv bearbeitet werden (zieht am Rundenende -1 Marke ab).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-infrastruktur">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Infrastruktur</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📱</span>
+            <div class="card-name">Smartes eID-Terminmanagement mit Push-Aufruf</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 4</div>
+        </div>
+        <div class="card-body">
+          <div>Für die Zustände Andrang und Überlastung zählt deine Warteschlange, als hätte sie 1 Antrag weniger. (Schlussmalus unverändert).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📚</span>
+            <div class="card-name">Fachverfahren „Pass/Ausweis 4.0“ kompakt</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 4</div>
+        </div>
+        <div class="card-body">
+          <div>Einmal pro Runde: Zahle 1 Zeit weniger für eine positive Aktion auf den zugeordneten Schreibtisch.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔍</span>
+            <div class="card-name">Umgang mit Sensor-Artefakten & Sonderfällen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 4</div>
+        </div>
+        <div class="card-body">
+          <div>Der erste Störfall pro Runde auf den zugeordneten Schreibtisch verliert seinen Nebeneffekt (reine Markenänderungen bleiben).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-schulung">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Schulung</span>
+            <span class="card-cost">⏱️ 4 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚡</span>
+            <div class="card-name">Biometrie-Triage & Arbeitsorganisation</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Set 4</div>
+        </div>
+        <div class="card-body">
+          <div>Bei Andrang (Warteschlange ≥ 3): Nach Abschluss eines Antrags darf sofort der nächste Fall nachrücken und verliert sofort 1 Marke.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🎴 PERSÖNLICHE STARTDECKS (24 Karten / 4 Decks) (Seite 1/3)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">✨</span>
+            <div class="card-name">Routinegriff (Druckluft & Scanner)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P1</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem eigenen aktiven Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">✨</span>
+            <div class="card-name">Routinegriff (Druckluft & Scanner)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P1</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem eigenen aktiven Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">☕</span>
+            <div class="card-name">Kollegiale Rückfrage am Kaffeeautomaten</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P1</div>
+        </div>
+        <div class="card-body">
+          <div>Ziehe 1 Karte vom Deck, lege danach 1 Handkarte auf deine Ablage.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📋</span>
+            <div class="card-name">Priorisieren im Warteraum</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P1</div>
+        </div>
+        <div class="card-body">
+          <div>Tausche einen deiner aktiven Anträge mit dem ersten Antrag deiner Warteschlange.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🛡️</span>
+            <div class="card-name">Plausibilitätsprüfung vorab</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P1</div>
+        </div>
+        <div class="card-body">
+          <div>Schutzschild: Verhindere, dass in diesem Zug eine Bearbeitungsmarke auf einen eigenen Schreibtisch gelegt wird.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚠️</span>
+            <div class="card-name">Unklare Passregister-Zuständigkeit</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P1</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Antrag. (Wird bei Abschluss übergeben).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">✨</span>
+            <div class="card-name">Routinegriff (Druckluft & Scanner)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P2</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem eigenen aktiven Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">✨</span>
+            <div class="card-name">Routinegriff (Druckluft & Scanner)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P2</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem eigenen aktiven Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">☕</span>
+            <div class="card-name">Kollegiale Rückfrage am Kaffeeautomaten</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P2</div>
+        </div>
+        <div class="card-body">
+          <div>Ziehe 1 Karte vom Deck, lege danach 1 Handkarte auf deine Ablage.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🎴 PERSÖNLICHE STARTDECKS (24 Karten / 4 Decks) (Seite 2/3)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📋</span>
+            <div class="card-name">Priorisieren im Warteraum</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P2</div>
+        </div>
+        <div class="card-body">
+          <div>Tausche einen deiner aktiven Anträge mit dem ersten Antrag deiner Warteschlange.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🛡️</span>
+            <div class="card-name">Plausibilitätsprüfung vorab</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P2</div>
+        </div>
+        <div class="card-body">
+          <div>Schutzschild: Verhindere, dass in diesem Zug eine Bearbeitungsmarke auf einen eigenen Schreibtisch gelegt wird.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚠️</span>
+            <div class="card-name">Unklare Passregister-Zuständigkeit</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P2</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Antrag. (Wird bei Abschluss übergeben).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">✨</span>
+            <div class="card-name">Routinegriff (Druckluft & Scanner)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P3</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem eigenen aktiven Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">✨</span>
+            <div class="card-name">Routinegriff (Druckluft & Scanner)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P3</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem eigenen aktiven Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">☕</span>
+            <div class="card-name">Kollegiale Rückfrage am Kaffeeautomaten</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P3</div>
+        </div>
+        <div class="card-body">
+          <div>Ziehe 1 Karte vom Deck, lege danach 1 Handkarte auf deine Ablage.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📋</span>
+            <div class="card-name">Priorisieren im Warteraum</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P3</div>
+        </div>
+        <div class="card-body">
+          <div>Tausche einen deiner aktiven Anträge mit dem ersten Antrag deiner Warteschlange.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🛡️</span>
+            <div class="card-name">Plausibilitätsprüfung vorab</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P3</div>
+        </div>
+        <div class="card-body">
+          <div>Schutzschild: Verhindere, dass in diesem Zug eine Bearbeitungsmarke auf einen eigenen Schreibtisch gelegt wird.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚠️</span>
+            <div class="card-name">Unklare Passregister-Zuständigkeit</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P3</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Antrag. (Wird bei Abschluss übergeben).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🎴 PERSÖNLICHE STARTDECKS (24 Karten / 4 Decks) (Seite 3/3)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">✨</span>
+            <div class="card-name">Routinegriff (Druckluft & Scanner)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P4</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem eigenen aktiven Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">✨</span>
+            <div class="card-name">Routinegriff (Druckluft & Scanner)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P4</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem eigenen aktiven Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">☕</span>
+            <div class="card-name">Kollegiale Rückfrage am Kaffeeautomaten</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P4</div>
+        </div>
+        <div class="card-body">
+          <div>Ziehe 1 Karte vom Deck, lege danach 1 Handkarte auf deine Ablage.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📋</span>
+            <div class="card-name">Priorisieren im Warteraum</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P4</div>
+        </div>
+        <div class="card-body">
+          <div>Tausche einen deiner aktiven Anträge mit dem ersten Antrag deiner Warteschlange.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🛡️</span>
+            <div class="card-name">Plausibilitätsprüfung vorab</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P4</div>
+        </div>
+        <div class="card-body">
+          <div>Schutzschild: Verhindere, dass in diesem Zug eine Bearbeitungsmarke auf einen eigenen Schreibtisch gelegt wird.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚠️</span>
+            <div class="card-name">Unklare Passregister-Zuständigkeit</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Startdeck P4</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Antrag. (Wird bei Abschluss übergeben).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+<div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🛒 ZENTRALER AKTIONSMARKT (48 Karten) (Seite 1/7)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📐</span>
+            <div class="card-name">ICAO-Norm perfekt getroffen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Normalbetrieb-Bonus</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem aktiven Antrag. Bei Normalbetrieb (Warteschlange ≤ 2) kostet diese Karte 0 Zeit.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📐</span>
+            <div class="card-name">ICAO-Norm perfekt getroffen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Normalbetrieb-Bonus</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem aktiven Antrag. Bei Normalbetrieb (Warteschlange ≤ 2) kostet diese Karte 0 Zeit.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📐</span>
+            <div class="card-name">ICAO-Norm perfekt getroffen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Normalbetrieb-Bonus</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem aktiven Antrag. Bei Normalbetrieb (Warteschlange ≤ 2) kostet diese Karte 0 Zeit.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📐</span>
+            <div class="card-name">ICAO-Norm perfekt getroffen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Normalbetrieb-Bonus</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Bearbeitungsmarke von einem aktiven Antrag. Bei Normalbetrieb (Warteschlange ≤ 2) kostet diese Karte 0 Zeit.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🧽</span>
+            <div class="card-name">Sensor gereinigt & Medienbruch behoben</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall-Beseitigung</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Marke von einem eigenen Antrag und entsorge anschließend sofort einen fremden Störfall an diesem Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🧽</span>
+            <div class="card-name">Sensor gereinigt & Medienbruch behoben</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall-Beseitigung</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Marke von einem eigenen Antrag und entsorge anschließend sofort einen fremden Störfall an diesem Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🧽</span>
+            <div class="card-name">Sensor gereinigt & Medienbruch behoben</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall-Beseitigung</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Marke von einem eigenen Antrag und entsorge anschließend sofort einen fremden Störfall an diesem Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🤝</span>
+            <div class="card-name">Amtshilfe an der Scan-Station</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Doppelschlag</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne je 1 Bearbeitungsmarke von beiden eigenen aktiven Schreibtischen. Du ziehst nächste Runde 1 Karte weniger.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🤝</span>
+            <div class="card-name">Amtshilfe an der Scan-Station</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Doppelschlag</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne je 1 Bearbeitungsmarke von beiden eigenen aktiven Schreibtischen. Du ziehst nächste Runde 1 Karte weniger.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🛒 ZENTRALER AKTIONSMARKT (48 Karten) (Seite 2/7)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🤝</span>
+            <div class="card-name">Amtshilfe an der Scan-Station</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Doppelschlag</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne je 1 Bearbeitungsmarke von beiden eigenen aktiven Schreibtischen. Du ziehst nächste Runde 1 Karte weniger.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🧴</span>
+            <div class="card-name">Handcreme-Ausgabe & Sensor-Politur</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Andrang-Synergie</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Marke von einem aktiven Fall. Falls du im Zustand Andrang (≥3) bist, ziehe zusätzlich 1 Karte.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🧴</span>
+            <div class="card-name">Handcreme-Ausgabe & Sensor-Politur</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Andrang-Synergie</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Marke von einem aktiven Fall. Falls du im Zustand Andrang (≥3) bist, ziehe zusätzlich 1 Karte.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🧴</span>
+            <div class="card-name">Handcreme-Ausgabe & Sensor-Politur</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Andrang-Synergie</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Marke von einem aktiven Fall. Falls du im Zustand Andrang (≥3) bist, ziehe zusätzlich 1 Karte.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">👁️</span>
+            <div class="card-name">Express-Iris-Abgleich</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Turbo-Abschluss</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 2 Marken von einem eigenen Antrag, sofern an diesem Schreibtisch kein Störfall anliegt.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">👁️</span>
+            <div class="card-name">Express-Iris-Abgleich</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Turbo-Abschluss</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 2 Marken von einem eigenen Antrag, sofern an diesem Schreibtisch kein Störfall anliegt.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">👁️</span>
+            <div class="card-name">Express-Iris-Abgleich</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Turbo-Abschluss</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 2 Marken von einem eigenen Antrag, sofern an diesem Schreibtisch kein Störfall anliegt.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🚀</span>
+            <div class="card-name">Express-Freigabe Bundesdruckerei</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Rückvergütung</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Marke von einem aktiven Antrag. Falls der Fall dadurch 0 Marken hat, erhalte sofort 1 Zeit zurück.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🚀</span>
+            <div class="card-name">Express-Freigabe Bundesdruckerei</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Rückvergütung</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Marke von einem aktiven Antrag. Falls der Fall dadurch 0 Marken hat, erhalte sofort 1 Zeit zurück.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🛒 ZENTRALER AKTIONSMARKT (48 Karten) (Seite 3/7)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-hilfe">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Hilfe</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🚀</span>
+            <div class="card-name">Express-Freigabe Bundesdruckerei</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Rückvergütung</div>
+        </div>
+        <div class="card-body">
+          <div>Entferne 1 Marke von einem aktiven Antrag. Falls der Fall dadurch 0 Marken hat, erhalte sofort 1 Zeit zurück.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔄</span>
+            <div class="card-name">Tagesplan & Wartenummern neu sortiert</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Agil</div>
+        </div>
+        <div class="card-body">
+          <div>Tausche die beiden aktiven Anträge untereinander ODER tausche einen aktiven mit dem 1. wartenden Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔄</span>
+            <div class="card-name">Tagesplan & Wartenummern neu sortiert</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Agil</div>
+        </div>
+        <div class="card-body">
+          <div>Tausche die beiden aktiven Anträge untereinander ODER tausche einen aktiven mit dem 1. wartenden Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔄</span>
+            <div class="card-name">Tagesplan & Wartenummern neu sortiert</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Agil</div>
+        </div>
+        <div class="card-body">
+          <div>Tausche die beiden aktiven Anträge untereinander ODER tausche einen aktiven mit dem 1. wartenden Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔄</span>
+            <div class="card-name">Tagesplan & Wartenummern neu sortiert</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Agil</div>
+        </div>
+        <div class="card-body">
+          <div>Tausche die beiden aktiven Anträge untereinander ODER tausche einen aktiven mit dem 1. wartenden Antrag.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🏗️</span>
+            <div class="card-name">Projektgruppe Biometrie-Upgrade</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Modernisierungs-Turbo</div>
+        </div>
+        <div class="card-body">
+          <div>Lege sofort 2 Zeit-Fortschritt auf eine deiner begonnenen Modernisierungen.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🏗️</span>
+            <div class="card-name">Projektgruppe Biometrie-Upgrade</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Modernisierungs-Turbo</div>
+        </div>
+        <div class="card-body">
+          <div>Lege sofort 2 Zeit-Fortschritt auf eine deiner begonnenen Modernisierungen.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🏗️</span>
+            <div class="card-name">Projektgruppe Biometrie-Upgrade</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Modernisierungs-Turbo</div>
+        </div>
+        <div class="card-body">
+          <div>Lege sofort 2 Zeit-Fortschritt auf eine deiner begonnenen Modernisierungen.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🏗️</span>
+            <div class="card-name">Projektgruppe Biometrie-Upgrade</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Modernisierungs-Turbo</div>
+        </div>
+        <div class="card-body">
+          <div>Lege sofort 2 Zeit-Fortschritt auf eine deiner begonnenen Modernisierungen.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🛒 ZENTRALER AKTIONSMARKT (48 Karten) (Seite 4/7)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🗑️</span>
+            <div class="card-name">DS-GVO-Löschroutine & Aktenbereinigung</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Deck-Optimierung</div>
+        </div>
+        <div class="card-body">
+          <div>Entsorge diese Karte und eine weitere Karte aus deiner Hand oder deinem Ablagestapel dauerhaft aus dem Spiel.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🗑️</span>
+            <div class="card-name">DS-GVO-Löschroutine & Aktenbereinigung</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Deck-Optimierung</div>
+        </div>
+        <div class="card-body">
+          <div>Entsorge diese Karte und eine weitere Karte aus deiner Hand oder deinem Ablagestapel dauerhaft aus dem Spiel.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🗑️</span>
+            <div class="card-name">DS-GVO-Löschroutine & Aktenbereinigung</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Deck-Optimierung</div>
+        </div>
+        <div class="card-body">
+          <div>Entsorge diese Karte und eine weitere Karte aus deiner Hand oder deinem Ablagestapel dauerhaft aus dem Spiel.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🎓</span>
+            <div class="card-name">Spontaner Biometrie-Workshop</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Kartenvorteil</div>
+        </div>
+        <div class="card-body">
+          <div>Ziehe sofort 2 Aktionskarten von deinem Deck. Lege danach 1 Handkarte auf deinen Ablagestapel.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🎓</span>
+            <div class="card-name">Spontaner Biometrie-Workshop</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Kartenvorteil</div>
+        </div>
+        <div class="card-body">
+          <div>Ziehe sofort 2 Aktionskarten von deinem Deck. Lege danach 1 Handkarte auf deinen Ablagestapel.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🎓</span>
+            <div class="card-name">Spontaner Biometrie-Workshop</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Kartenvorteil</div>
+        </div>
+        <div class="card-body">
+          <div>Ziehe sofort 2 Aktionskarten von deinem Deck. Lege danach 1 Handkarte auf deinen Ablagestapel.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📜</span>
+            <div class="card-name">Dienstanweisung zur Beschleunigung</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Überstunden</div>
+        </div>
+        <div class="card-body">
+          <div>Erhalte sofort 1 zusätzliche Zeit in diesem Zug. In der nächsten Runde ziehst du dafür 1 Karte weniger.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📜</span>
+            <div class="card-name">Dienstanweisung zur Beschleunigung</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Überstunden</div>
+        </div>
+        <div class="card-body">
+          <div>Erhalte sofort 1 zusätzliche Zeit in diesem Zug. In der nächsten Runde ziehst du dafür 1 Karte weniger.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-organisation">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Organisation</span>
+            <span class="card-cost">⏱️ 0 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📜</span>
+            <div class="card-name">Dienstanweisung zur Beschleunigung</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Überstunden</div>
+        </div>
+        <div class="card-body">
+          <div>Erhalte sofort 1 zusätzliche Zeit in diesem Zug. In der nächsten Runde ziehst du dafür 1 Karte weniger.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🛒 ZENTRALER AKTIONSMARKT (48 Karten) (Seite 5/7)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📸</span>
+            <div class="card-name">Passfoto abgelehnt: Schattenwurf!</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Übergabe</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Schreibtisch. (Max. 4 Marken pro Fall).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📸</span>
+            <div class="card-name">Passfoto abgelehnt: Schattenwurf!</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Übergabe</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Schreibtisch. (Max. 4 Marken pro Fall).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📸</span>
+            <div class="card-name">Passfoto abgelehnt: Schattenwurf!</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Übergabe</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Schreibtisch. (Max. 4 Marken pro Fall).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📸</span>
+            <div class="card-name">Passfoto abgelehnt: Schattenwurf!</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Übergabe</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Schreibtisch. (Max. 4 Marken pro Fall).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖐️</span>
+            <div class="card-name">Sensorfehler: Fingerkuppen abgenutzt</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Übergabe</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Schreibtisch. Der Betroffene muss nachjustieren.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖐️</span>
+            <div class="card-name">Sensorfehler: Fingerkuppen abgenutzt</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Übergabe</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Schreibtisch. Der Betroffene muss nachjustieren.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖐️</span>
+            <div class="card-name">Sensorfehler: Fingerkuppen abgenutzt</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Übergabe</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Schreibtisch. Der Betroffene muss nachjustieren.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🖐️</span>
+            <div class="card-name">Sensorfehler: Fingerkuppen abgenutzt</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Übergabe</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Schreibtisch. Der Betroffene muss nachjustieren.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🛑</span>
+            <div class="card-name">Bürger verweigert Iris-Scan</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Blockade</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Der betroffene fremde Antrag verliert am nächsten Rundenende keine Bearbeitungsmarke.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🛒 ZENTRALER AKTIONSMARKT (48 Karten) (Seite 6/7)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🛑</span>
+            <div class="card-name">Bürger verweigert Iris-Scan</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Blockade</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Der betroffene fremde Antrag verliert am nächsten Rundenende keine Bearbeitungsmarke.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🛑</span>
+            <div class="card-name">Bürger verweigert Iris-Scan</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Blockade</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Der betroffene fremde Antrag verliert am nächsten Rundenende keine Bearbeitungsmarke.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔒</span>
+            <div class="card-name">Rückfrage der Pass-Zertifizierungsstelle</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Stummschaltung</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Marke auf den fremden Antrag. Die dauerhafte Personalfähigkeit dieses Schreibtischs ist bis Rundenende inaktiv.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔒</span>
+            <div class="card-name">Rückfrage der Pass-Zertifizierungsstelle</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Stummschaltung</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Marke auf den fremden Antrag. Die dauerhafte Personalfähigkeit dieses Schreibtischs ist bis Rundenende inaktiv.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 2 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🔒</span>
+            <div class="card-name">Rückfrage der Pass-Zertifizierungsstelle</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Stummschaltung</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Lege 1 Marke auf den fremden Antrag. Die dauerhafte Personalfähigkeit dieses Schreibtischs ist bis Rundenende inaktiv.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">💥</span>
+            <div class="card-name">Live-Sync zur Bundesdruckerei fehlgeschlagen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Totalblockade</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Der betroffene Fall wird am Rundenende nicht bearbeitet. (Darf nicht auf Fälle mit nur 1 Marke gespielt werden).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">💥</span>
+            <div class="card-name">Live-Sync zur Bundesdruckerei fehlgeschlagen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Totalblockade</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Der betroffene Fall wird am Rundenende nicht bearbeitet. (Darf nicht auf Fälle mit nur 1 Marke gespielt werden).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-störfall">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Störfall</span>
+            <span class="card-cost">⏱️ 3 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">💥</span>
+            <div class="card-name">Live-Sync zur Bundesdruckerei fehlgeschlagen</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Störfall · Totalblockade</div>
+        </div>
+        <div class="card-body">
+          <div>Störfall: Der betroffene Fall wird am Rundenende nicht bearbeitet. (Darf nicht auf Fälle mit nur 1 Marke gespielt werden).</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-reaktion">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Reaktion</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🛡️</span>
+            <div class="card-name">Doch zuständig (Gültiges Ersatzdokument)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Reaktion · Neutralisieren</div>
+        </div>
+        <div class="card-body">
+          <div>Reaktion: Neutralisiere einen gerade gespielten fremden Störfall. Die Störfallkarte geht auf die Ablage des Angreifers.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🛒 ZENTRALER AKTIONSMARKT (48 Karten) (Seite 7/7)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-reaktion">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Reaktion</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🛡️</span>
+            <div class="card-name">Doch zuständig (Gültiges Ersatzdokument)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Reaktion · Neutralisieren</div>
+        </div>
+        <div class="card-body">
+          <div>Reaktion: Neutralisiere einen gerade gespielten fremden Störfall. Die Störfallkarte geht auf die Ablage des Angreifers.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-reaktion">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Reaktion</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">🛡️</span>
+            <div class="card-name">Doch zuständig (Gültiges Ersatzdokument)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Reaktion · Neutralisieren</div>
+        </div>
+        <div class="card-body">
+          <div>Reaktion: Neutralisiere einen gerade gespielten fremden Störfall. Die Störfallkarte geht auf die Ablage des Angreifers.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-reaktion">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Reaktion</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚡</span>
+            <div class="card-name">Pragmatische Zwischenlösung (Manuelle Freigabe)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Reaktion · Schadensbegrenzung</div>
+        </div>
+        <div class="card-body">
+          <div>Reaktion: Ein fremder Effekt, der die Bearbeitung am Rundenende verhindert, legt stattdessen genau 1 Marke auf den Fall.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-reaktion">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Reaktion</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚡</span>
+            <div class="card-name">Pragmatische Zwischenlösung (Manuelle Freigabe)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Reaktion · Schadensbegrenzung</div>
+        </div>
+        <div class="card-body">
+          <div>Reaktion: Ein fremder Effekt, der die Bearbeitung am Rundenende verhindert, legt stattdessen genau 1 Marke auf den Fall.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-reaktion">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Reaktion</span>
+            <span class="card-cost">⏱️ 1 Zeit</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">⚡</span>
+            <div class="card-name">Pragmatische Zwischenlösung (Manuelle Freigabe)</div>
+          </div>
+          
+          <div class="card-tag-pill">🔖 Reaktion · Schadensbegrenzung</div>
+        </div>
+        <div class="card-body">
+          <div>Reaktion: Ein fremder Effekt, der die Bearbeitung am Rundenende verhindert, legt stattdessen genau 1 Marke auf den Fall.</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>Biometrie-Edition</span>
+        </div>
+      </div>
+<div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>📄 ANTRAGSKARTEN (48 Bürger-Fälle) (Seite 1/6)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Express-Reisepass mit 3D-Gesichtsscan</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Abflug morgen früh um 6 Uhr. Die biometrische Passkontrolle in Singapur verzeiht keine Fehler.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Fingerabdruck-Nacherfassung für ePerso</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Nach 20 Jahren Gartenarbeit erkennt der optische Sensor die Papillarlinien nur noch als abstrakte Kunst.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Passbild-Korrektur: Lächelverbot missachtet</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Die Mundwinkel waren 1,2 Millimeter zu hoch für den unerbittlichen ICAO-Konformitäts-Algorithmus.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Neugeborenen-Erstregistrierung & Iris-Abgleich</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Das Baby blinzelte genau in der Millisekunde des Infrarot-Blitzes. Versuch Nummer 8.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Verlustanzeige mit eID-Sperrung</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Portemonnaie auf dem Bürgerfest verloren – sicherheitshalber auch alle FIDO2-Zertifikate widerrufen.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Biometrischer Grenzgänger-Pass (EasyPASS)</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Täglich über die Grenze pendeln, aber das Lesegerät verlangt jedes Mal eine manuelle Neukalibrierung.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Führerschein-Umtausch mit digitalem Lichtbildabgleich</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Das Foto auf dem grauen Lappen stammt aus 1982 – die KI vermutet einen Zeitreise-Betrug.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Wohnsitzanmeldung mit digitalem Meldeschein</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Der QR-Code auf der Wohnungsgeberbestätigung ist mit Kaffee bekleckert und nicht mehr lesbar.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Kinderreisepass-Aktualisierung (Wachstumsschub)</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„In zwei Monaten 8 cm gewachsen – das Gesichtserkennungssystem schlägt Alarm wegen Gestaltwechsel.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>📄 ANTRAGSKARTEN (48 Bürger-Fälle) (Seite 2/6)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Notfall-Reisedokument an der Flughafengrenze</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Zwei Daumenabdrücke und ein flehentlicher Blick genügen, wenn der Bundesdruckerei-Server mitspielt.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">PIN-Rücksetzbrief für Online-Ausweisfunktion</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Der Briefumschlag mit dem Freischaltcode liegt garantiert im allergeheimsten Ordner der Wohnung.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Vor-Ort-Fotoautomat: Brillen-Reflexion</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Der Automat fordert zum fünften Mal: 'Bitte Brille abnehmen, Scheitel korrigieren und neutral schauen!'“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Namensänderung nach Eheschließung mit Zertifikats-Update</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Alle Nachweise liegen lückenlos vor – nur die Software streikt beim Doppelnamen mit Umlauten.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Visum-Verlängerung mit 10-Finger-Scan</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Der rechte Ringfinger hat Pflaster. Jetzt muss eine amtliche Ausnahmegenehmigung her.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Diplomatenpass-Erneuerung (Sonderprotokoll)</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Erhöhte Verschlüsselungsstufe, aber die Schnittstelle im Bürgeramt läuft noch über Kupferkabel.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Zweitwohnsitz-Steuererklärung & eID-Abgleich</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Die Steuerberechnung klappt sofort, aber das Register verlangt ein zweites biometrisches Passbild.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Vorläufiger Personalausweis vor Kreuzfahrt</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Gültigkeit: 3 Monate. Gedruckt auf speziellem Sicherheitspapier mit echtem Stempelfett.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Gewerbeummeldung mit Authentifizierungs-Token</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Der USB-Stick mit dem Behörden-Zertifikat wurde versehentlich als Werbegeschenk formatiert.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>📄 ANTRAGSKARTEN (48 Bürger-Fälle) (Seite 3/6)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Identitätsfeststellung nach verpasstem Venenscan</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Der Bürger beteuert, noch dieselbe Person wie vor 5 Jahren zu sein. Das System verlangt Zeugen.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Ausstellung eines Dienstausweises mit RFID-Chip</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Öffnet alle Türen im Rathaus – außer der Kantine, weil der Speiseplan-Server offline ist.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Biometrischer Seefahrtsausweis</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Hautkontakt mit Salzwasser führt zu erhöhter Fehlerrate am kapazitiven Fingersensor.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Echtheitsprüfung ausländischer Geburtsurkunden</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Beglaubigte Übersetzung mit Apostille, aber die Tinte glänzt nicht im korrekten UV-Spektrum.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Korrektur der Meldeanschrift im Chip-Speicher</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Der Aufkleber für die Rückseite klebt schief, aber die internen Bits stimmen millimetergenau.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Sonderausweis für Berufsfeuerwehr & Katastrophenschutz</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Rußpartikel an den Fingerkuppen verlangen eine manuelle Freigabe durch den Sachgebietsleiter.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Erstbeantragung Personalausweis mit 16 Jahren</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Der erste eigene Ausweis. Die Unterschrift auf dem Signaturpad wurde dreimal wiederholt.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Registerabgleich nach Doppelstaatsbürgerschafts-Reform</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Zwei Pässe, zwei Schreibweisen des Nachnamens, ein ratloses NOBID-Verfahren.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Express-Abholung am automatischen 24/7-Ausgabeterminal</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Das Terminal verlangt SMS-Code, PIN und Fingerabdruck, spuckt aber zuerst eine Quittung aus.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>📄 ANTRAGSKARTEN (48 Bürger-Fälle) (Seite 4/6)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Verlängerung Jagdschein mit Zuverlässigkeitsprüfung</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Automatische Abfrage im Nationalen Waffenregister – Ladebalken steht bei 99 %.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Parkausweis für Schwerbehinderte mit QR-Verifikation</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Das Dokument ist laminiert, der QR-Code spiegelt in der Windschutzscheibe.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Beglaubigung von Zeugniskopien mit Siegel-Scan</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Prägestempel muss im 45-Grad-Winkel unter die Dokumentenkamera gehalten werden.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Führungszeugnis für Ehrenamtliche im Sportverein</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Befreiung von den Gebühren nachgewiesen, aber der Vereinssiegel-Stempel war zu schwach.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Nachträgliche Aktivierung der eID-Funktion</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Vor 8 Jahren deaktiviert, jetzt soll die Steuererklärung plötzlich volldigital laufen.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Meldebescheinigung für Bankkredit</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Der Banker will ein Original mit Nassunterschrift, der Bürger hat nur das PDF auf dem Smartphone.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Eintragung eines Ordens- oder Künstlernamens</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„'DJ Amtsschimmel' soll in das Passregister eingetragen werden. Drei Fachaufsichten beraten.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Erfassung biometrischer Daten für Mobilitätskarte</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Senioren-Monatskarte mit Fotoabgleich am Bus-Entwerter. Die Schlange wird länger.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Rückgabe ungültiger Dokumente zur Vernichtung</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Mit der amtlichen Lochzange die Chip-Antenne durchtrennen – der befriedigendste Moment des Tages.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>📄 ANTRAGSKARTEN (48 Bürger-Fälle) (Seite 5/6)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Korrektur des Geburtsorts (Gemeindereform 1974)</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Das Dorf gehört seit 50 Jahren zur Nachbarstadt, im Taufregister steht aber der alte Name.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Ausstellung eines Reiseausweises für Staatenlose</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Hochkomplexes Genehmigungsverfahren mit ministerieller Sonderfreigabe.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Vollmachts-Hinterlegung für Vorsorge und Betreuung</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Elektronisches Notarregister antwortet innerhalb von 0,4 Sekunden – alle Beschäftigten staunen.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Wahlbenachrichtigung verloren: Wahlschein-Antrag</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Sonntag ist Bundestagswahl. Identitätsprüfung via Fingerkuppenabgleich am Schalter.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Zertifikatswechsel am mobilen Koffer-Arbeitsplatz</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Hausbesuch im Seniorenheim mit dem 14-Kilo-Hightech-Koffer. Die Batterie zeigt 12 %.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Erfassung der Pupillendistanz für Dienstbrille</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Die Bildschirmarbeitsplatzverordnung verlangt höchste optische Präzision.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Ausweisprüfung für Eheschließung im Standesamt</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Biometrischer Check im Nachbarzimmer, damit die Trauung pünktlich beginnen kann.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Abgleich nach Namens-Kombination im Melderegister</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Dreifach-Vorname ohne Bindestrich – die Datenbank sortiert den Mittelnamen als Spitznamen ein.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Grenzübertrittsausweis für Binnenschiffer</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Wasserfeste Dokumentenkarte mit gehärtetem Kryptochip.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>📄 ANTRAGSKARTEN (48 Bürger-Fälle) (Seite 6/6)</div>
+      <span>Entlang der gestrichelten Linien ausschneiden</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Identitätsüberprüfung nach Phishing-Verdacht</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Gefälschte Behörden-SMS erhalten – der Bürger möchte seinen Chip persönlich desinfizieren lassen.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Status-Abfrage: Passlieferung aus Berlin</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Der Kurier der Bundesdruckerei steht angeblich im Stau auf der A7.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+
+      <div class="pnp-card card-type-antrag">
+        <div>
+          <div class="card-top">
+            <span class="card-type-tag">Antrag</span>
+            <span class="card-cost">1 Pkt.</span>
+          </div>
+          <div class="card-title-row">
+            <span class="card-icon">📄</span>
+            <div class="card-name">Sonderprüfung: Zwillingsverwechslung im Passregister</div>
+          </div>
+          
+          
+        </div>
+        <div class="card-body">
+          <div class="card-flavor">„Eineiige Zwillinge mit identischem Geburtsdatum bringen das biometrische Matching an seine Grenzen.“</div>
+        </div>
+        <div class="card-footer">
+          <span>AMTLICH! v0.2</span>
+          <span>🔴 🔴 Startmarken</span>
+        </div>
+      </div>
+<div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div><div class="pnp-card" style="border: 1px dotted #e2e8f0;"></div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>🪙 TOKEN- & MARKIERUNGSBOGEN (Ausschneiden)</div>
+      <span>Auf Karton kleben und ausschneiden</span>
+    </div>
+    <div class="token-grid">
+<div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-mark">🔴<br/>Marke</div><div class="pnp-token token-time">⏱️ 1<br/>K1</div><div class="pnp-token token-time">⏱️ 2<br/>K1</div><div class="pnp-token token-time">⏱️ 3<br/>K1</div><div class="pnp-token token-time">⏱️ 1<br/>K2</div><div class="pnp-token token-time">⏱️ 2<br/>K2</div><div class="pnp-token token-time">⏱️ 3<br/>K2</div><div class="pnp-token token-time">⏱️ 1<br/>K3</div><div class="pnp-token token-time">⏱️ 2<br/>K3</div><div class="pnp-token token-time">⏱️ 3<br/>K3</div><div class="pnp-token token-time">⏱️ 1<br/>K4</div><div class="pnp-token token-time">⏱️ 2<br/>K4</div><div class="pnp-token token-time">⏱️ 3<br/>K4</div><div class="pnp-token token-round">Runde<br/><strong>1</strong></div><div class="pnp-token token-round">Runde<br/><strong>2</strong></div><div class="pnp-token token-round">Runde<br/><strong>3</strong></div><div class="pnp-token token-round">Runde<br/><strong>4</strong></div><div class="pnp-token token-round">Runde<br/><strong>5</strong></div><div class="pnp-token token-round">Runde<br/><strong>6</strong></div><div class="pnp-token token-round">Runde<br/><strong>7</strong></div><div class="pnp-token token-round">Runde<br/><strong>8</strong></div><div class="pnp-token token-start">👑<br/>Start</div><div class="pnp-token token-start">🛡️<br/>Schutz</div><div class="pnp-token token-start">⚡<br/>Triage</div><div class="pnp-token token-start">💼<br/>Koffer</div>
+    </div>
+  </div>
+</body>
+</html>

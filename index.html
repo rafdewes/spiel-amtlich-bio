@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMTLICH! Das biometrische Bürgeramt - Virtuelles Brettspiel</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Top Header -->
+    <header id="main-header">
+      <div class="header-left">
+        <div class="logo-badge">🏛️ AMTLICH!</div>
+        <div class="logo-title">
+          <h1>Das biometrische Bürgeramt</h1>
+          <span class="version-tag">Prototyp v0.2 · Biometrie-Edition</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="game-meta-item" id="header-round">Runde 1 / 8</div>
+        <div class="game-meta-item" id="header-startplayer">Startspieler: ...</div>
+        <div class="game-meta-item active-turn-badge" id="header-active-turn">...</div>
+        <div class="game-meta-item phase-badge" id="header-phase-badge">Phase: Zuweisung</div>
+      </div>
+
+      <div class="header-right">
+        <button class="btn btn-header" id="btn-toggle-sound" title="Soundeffekte umschalten">🔊 Ton: An</button>
+        <button class="btn btn-header" id="btn-open-rules" title="Dienstvorschrift & Spielregeln öffnen">📖 Amtsblatt / Regeln</button>
+        <a href="print-to-play/print_sheets.html" target="_blank" class="btn btn-header" title="Druckfertige Print-to-Play Bögen & Karten öffnen">🖨️ Print-to-Play</a>
+        <button class="btn btn-header btn-header-accent" id="btn-new-game" title="Neue Partie starten">⚙️ Neues Spiel</button>
+      </div>
+    </header>
+
+    <!-- Main Game Board Grid -->
+    <main id="game-board">
+      <!-- Left / Top: Opponent Overview -->
+      <section id="opponents-section">
+        <div class="section-header">
+          <h2>🌐 Andere Kommunen & Bezirksämter</h2>
+          <span class="section-subtitle">Live-Lage im Bundesgebiet</span>
+        </div>
+        <div id="opponents-container" class="opponents-grid">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+
+      <!-- Center: Active Player Office Board -->
+      <section id="my-office-section">
+        <div id="my-office-board">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+
+      <!-- Bottom Grid: Market & Player Hand & Controls -->
+      <section id="actions-bottom-section">
+        <div class="bottom-grid-layout">
+          <!-- Market Column -->
+          <div class="market-column">
+            <div class="section-header">
+              <h2>🛒 Zentraler Aktionsmarkt</h2>
+              <span class="section-subtitle">Kostenlos bis zu 1 Karte pro Zug erwerben</span>
+            </div>
+            <div id="market-cards-container" class="market-grid">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Hand Cards & Controls Column -->
+          <div class="hand-column">
+            <div class="section-header">
+              <h2>🎴 Deine Handkarten (Aktive Dienstakte)</h2>
+              <span class="section-subtitle">Mit Zeitpunkten (⏱️) bezahlen</span>
+            </div>
+            <div id="hand-cards-container" class="hand-grid">
+              <!-- Rendered via JS -->
+            </div>
+
+            <div id="turn-controls-container" class="turn-controls-panel">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Activity Log / Amts-Protokoll Drawer -->
+      <section id="log-section">
+        <div class="section-header">
+          <h2>📜 Amts-Protokoll & Dienstvermerke</h2>
+          <span class="section-subtitle">Chronologischer Vorgangsverlauf</span>
+        </div>
+        <div id="action-log-entries" class="log-entries-box">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="main-footer">
+      <div>AMTLICH! – Das digitale Bürgeramt (Spielkonzept v0.2) · Browser-Prototyp</div>
+      <div class="footer-note">Humorvolle Verwaltungssatire über biometrische Passkontrollen, ICAO-Normen und den Behördenalltag.</div>
+    </footer>
+  </div>
+
+  <!-- MODAL: Störfall-Übergabe / Entscheidungsdialog -->
+  <div id="disruption-choice-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚠️ Fall abgeschlossen – Störfall-Entscheidung!</h3>
+      </div>
+      <div class="modal-body">
+        <p id="disruption-req-title" class="modal-callout-text"></p>
+        <p>Ein Antrag mit anliegendem gegnerischen Störfall wurde soeben erfolgreich abgeschlossen:</p>
+        <div class="modal-card-preview">
+          <strong id="disruption-card-name"></strong><br/>
+          <small id="disruption-card-type"></small>
+          <p id="disruption-card-desc" style="margin-top: 8px;"></p>
+        </div>
+        <p>Was soll mit dieser Störfall-Karte geschehen?</p>
+      </div>
+      <div class="modal-footer-choices">
+        <button class="btn btn-primary" onclick="window.app.handleDisruptionDecision('learn')">
+          🎓 Lerneffekt!<br/>
+          <small>(Karte wandert in deine eigene Ablage und gehört ab jetzt zu deinem Deck)</small>
+        </button>
+        <button class="btn btn-secondary" onclick="window.app.handleDisruptionDecision('dispose')">
+          🗄️ Fall abgeschlossen<br/>
+          <small>(Karte wird dauerhaft aus dem Spiel entsorgt)</small>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Zielauswahl für Störfälle -->
+  <div id="target-selection-modal" class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3>🎯 Störfall anlegen – Ziel auswählen</h3>
+        <button class="btn-close" onclick="window.app.closeAllActionModals()">✖</button>
+      </div>
+      <div class="modal-body">
+        <p>Wähle eine gegnerische Kommune und den konkreten Schreibtisch, auf den der Störfall angelegt werden soll:</p>
+        <div id="target-selection-container">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="window.app.closeAllActionModals()">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Schreibtisch- oder Kartenauswahl -->
+  <div id="desk-selection-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📋 Auswahl treffen</h3>
+        <button class="btn-close" onclick="window.app.closeAllActionModals()">✖</button>
+      </div>
+      <div class="modal-body">
+        <div id="desk-selection-container" class="selection-grid">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="window.app.closeAllActionModals()">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Modernisierungs-Katalog -->
+  <div id="mod-picker-modal" class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3>🏗️ Kommunaler Modernisierungs-Katalog</h3>
+        <button class="btn-close" onclick="window.app.closeAllActionModals()">✖</button>
+      </div>
+      <div class="modal-body">
+        <p>Jede Kommune besitzt Zugriff auf denselben persönlichen Vorrat aus 9 Modernisierungen. Begonnene Projekte belegen einen von 3 Plätzen und werden mit Zeitpunkten bezahlt:</p>
+        <div id="mod-picker-container" class="mod-picker-grid">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="window.app.closeAllActionModals()">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Neues Spiel / Konfiguration -->
+  <div id="new-game-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚙️ Neue Partie konfigurieren</h3>
+        <button class="btn-close" id="btn-cancel-new-game">✖</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="select-game-mode">Spielmodus:</label>
+          <select id="select-game-mode" class="form-select">
+            <option value="solo" selected>Solo vs. KI-Gegner</option>
+            <option value="hotseat">Lokaler Mehrspielermodus (Pass & Play)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="select-player-count">Anzahl der Kommunen (Spielerzahl):</label>
+          <select id="select-player-count" class="form-select">
+            <option value="2">2 Kommunen (Duell)</option>
+            <option value="3" selected>3 Kommunen (Empfohlen)</option>
+            <option value="4">4 Kommunen (Volle Besetzung)</option>
+          </select>
+        </div>
+        <div class="callout-info">
+          <strong>Regelwerk:</strong> 8 Runden, je 3 Zeit pro Zug. 1 Pflichtantrag pro Runde. Jeder erledigte Fall bringt 1 Punkt, unvollständige Fälle bringen am Spielende Malus!
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-confirm-new-game">🏛️ Partie jetzt starten</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Dienstvorschrift & Regeln -->
+  <div id="rules-modal" class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3>📖 Amtsblatt & Dienstvorschrift (Regeln v0.2)</h3>
+        <button class="btn-close" id="btn-close-rules">✖</button>
+      </div>
+      <div class="modal-body rules-content">
+        <h4>1. Spielziel & Ablauf</h4>
+        <p>Du leitest das Bürgeramt einer Kommune. Über <strong>8 Runden</strong> versuchst du, möglichst viele Bürgeranträge erfolgreich abzuschließen (+1 Punkt) und dabei die Warteschlange nicht überlaufen zu lassen.</p>
+        
+        <h4>2. Ablauf eines Zuges (3 Zeitpunkte pro Runde)</h4>
+        <ol>
+          <li><strong>Zeit erhalten:</strong> Du startest mit 3 Zeit. Nicht verbrauchte Zeit verfällt.</li>
+          <li><strong>Anträge annehmen:</strong> Wähle 1 (Pflicht), 2 oder 3 Anträge. Freie Schreibtische werden besetzt, der Rest wartet in der Warteschlange. Jeder Fall startet mit 2 Bearbeitungsmarken.</li>
+          <li><strong>Aktionen & Ausbau:</strong> Spiele Handkarten gegen Zeitkosten aus oder investiere Zeit in bis zu 3 Modernisierungen.</li>
+          <li><strong>Marktkarte erwerben:</strong> Nimm bis zu 1 der 3 offenen Marktkarten kostenlos auf deine persönliche Ablage.</li>
+        </ol>
+
+        <h4>3. Gemeinsames Rundenende</h4>
+        <p>Nachdem alle Kommunen ihren Zug beendet haben, verliert jeder aktiv bearbeitete Schreibtisch <strong>1 Bearbeitungsmarke</strong>. Anträge mit 0 Marken wandern in den Wertungsstapel (+1 Punkt). Etwaige fremde Störfälle dürfen als <em>Lerneffekt</em> ins eigene Deck übernommen werden.</p>
+
+        <h4>4. Warteschlange & Andrang</h4>
+        <ul>
+          <li><strong>0–2 Anträge:</strong> Normalbetrieb.</li>
+          <li><strong>3–4 Anträge (Andrang):</strong> Fremde Angriffe gegen dich kosten +1 Zeit. Schaltet Triage-Fähigkeiten frei.</li>
+          <li><strong>5+ Anträge (Überlastung):</strong> Wie Andrang; erste positive Aktion kostet 1 Zeit weniger.</li>
+        </ul>
+
+        <h4>5. Schlusswertung (nach Runde 8)</h4>
+        <p>Jeder erledigte Antrag im Wertungsstapel = <strong>+1 Punkt</strong>. Je zwei noch offene Anträge (Schreibtische + Warteschlange) kosten <strong>-1 Punkt</strong> (aufgerundet).</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="document.getElementById('rules-modal').classList.remove('modal-visible')">Verstanden</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Schlusswertung / Prüfbericht des Landesrechnungshofs -->
+  <div id="game-over-modal" class="modal-overlay">
+    <div class="modal-card modal-lg">
+      <div class="modal-header stamp-header">
+        <div class="stamp-badge">AMTLICH GEPRÜFT</div>
+        <h3>📊 Prüfbericht des Landesrechnungshofs</h3>
+        <p class="subtitle">Abschlussbewertung nach 8 Runden Amtsbetrieb</p>
+      </div>
+      <div class="modal-body">
+        <table class="rankings-table">
+          <thead>
+            <tr>
+              <th>Rang</th>
+              <th>Kommune</th>
+              <th>Erledigte Anträge</th>
+              <th>Offene Anträge</th>
+              <th>Schlussmalus</th>
+              <th>Gesamtergebnis</th>
+            </tr>
+          </thead>
+          <tbody id="game-over-rankings-body">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+        <div class="audit-summary-note">
+          „Die biometrische Erfassung sowie die Einhaltung der ICAO-Lichtbildstandards wurden nach § 14 PassG ordnungsgemäß auditiert.“
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="window.app.initNewGame({ playerCount: window.app.gameState.players.length })">
+          🔄 Neue Partie starten
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/bundle.js"></script>
+</body>
+</html>

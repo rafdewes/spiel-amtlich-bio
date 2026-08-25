@@ -1,0 +1,629 @@
+/**
+ * AMTLICH! Das biometrische Bürgeramt - Kartendaten & Definitionen
+ * Alle Karten, Profile, Modernisierungen und Anträge
+ */
+
+export const STAFF_PROFILES = [
+  {
+    id: 'aylin_demir',
+    name: 'Aylin Demir',
+    title: 'Biometrie-Lotsin & FIDO2-Spezialistin',
+    avatar: '👩‍💼',
+    synergy: 'Digitalisierung · Schnelle Zuweisung',
+    description: 'Sobald eine Digitalisierung aktiv ist, startet der erste ihr pro Runde zugewiesene Antrag mit 1 Bearbeitungsmarke weniger (1 statt 2).'
+  },
+  {
+    id: 'bernd_peters',
+    name: 'Bernd Peters',
+    title: 'Publikumsliebling & Scanner-Flüsterer',
+    avatar: '👨‍💼',
+    synergy: 'Störfall-Schutz · Deeskalation',
+    description: 'Ein fremder Störfall gegen seinen Schreibtisch kostet die ausspielende Kommune 1 zusätzliche Zeit.'
+  },
+  {
+    id: 'claudia_reuter',
+    name: 'Claudia Reuter',
+    title: 'Dienst nach ICAO-Norm',
+    avatar: '👩‍⚖️',
+    synergy: 'Schadensbegrenzung · Vorschrift',
+    description: 'Der erste Störfall an ihrem Schreibtisch darf höchstens 1 zusätzliche Marke verursachen und keine Bearbeitungsphase überspringen lassen.'
+  },
+  {
+    id: 'darius_wolf',
+    name: 'Darius Wolf',
+    title: 'Fortbildungsfan & Zertifikats-Sammler',
+    avatar: '👨‍🎓',
+    synergy: 'Schulungen · Effizienz',
+    description: 'Die erste Schulung an seinem Personalplatz kostet insgesamt 2 Zeit weniger.'
+  },
+  {
+    id: 'eleni_papadakis',
+    name: 'Eleni Papadakis',
+    title: 'Improvisationstalent & Sensor-Putzmeisterin',
+    avatar: '👩‍🔧',
+    synergy: 'Flexibilität · Platzwechsel',
+    description: 'Einmal pro Runde darfst du die aktiven Anträge deiner beiden Schreibtische kostenlos tauschen.'
+  },
+  {
+    id: 'frank_neumann',
+    name: 'Frank Neumann',
+    title: 'Ruhepol & Warteschlangen-Bändiger',
+    avatar: '🧔',
+    synergy: 'Andrang · Kostenreduktion',
+    description: 'Bei 3 oder mehr wartenden Anträgen (Andrang) sind eigene positive Aktionen auf seinen Schreibtisch 1 Zeit günstiger (mindestens 0 Zeit).'
+  },
+  {
+    id: 'guel_kaya',
+    name: 'Gül Kaya',
+    title: 'Triage-Profi & Schnell-Erfasserin',
+    avatar: '👩‍⚕️',
+    synergy: 'Andrang · Schneller Durchsatz',
+    description: 'Bei 3 oder mehr wartenden Anträgen (Andrang) startet der nächste ihr zugewiesene Antrag mit 1 Marke weniger.'
+  },
+  {
+    id: 'hannes_vogt',
+    name: 'Hannes Vogt',
+    title: 'Gründlicher Prüfer & DPI-Fetischist',
+    avatar: '👨‍🔬',
+    synergy: 'Markenschutz · Exaktheit',
+    description: 'Negative Aktionen können keine bereits entfernte Marke auf seinen Antrag zurücklegen (dürfen die Bearbeitung aber blockieren).'
+  },
+  {
+    id: 'isabel_koenig',
+    name: 'Isabel König',
+    title: 'Springerin & Mobile-Station-Expertin',
+    avatar: '👩‍💻',
+    synergy: 'Dynamik · Ausweichplatz',
+    description: 'Einmal pro Runde darf ein aktiver Antrag auf einen gerade frei gewordenen Personalplatz verschoben werden.'
+  },
+  {
+    id: 'jonas_weber',
+    name: 'Jonas Weber',
+    title: 'Prozessdenker & Registervernetzer',
+    avatar: '👨‍💻',
+    synergy: 'Infrastruktur · Doppelwirkung',
+    description: 'Die erste Infrastruktur, die seinen Schreibtisch betrifft, darf einmal pro Runde ein zweites Mal auslösen.'
+  },
+  {
+    id: 'karla_nguyen',
+    name: 'Karla Nguyen',
+    title: 'Teamcoach & Fehlercode-Dolmetscherin',
+    avatar: '👩‍🏫',
+    synergy: 'Teamplay · Hilfsübertragung',
+    description: 'Einmal pro Runde darf eine positive Aktion statt auf ihren Schreibtisch auf den Antrag des anderen Schreibtischs wirken.'
+  },
+  {
+    id: 'mehmet_yilmaz',
+    name: 'Mehmet Yilmaz',
+    title: 'Routinier & Fingerabdruck-Veteran',
+    avatar: '👴',
+    synergy: 'Störungsfreiheit · Doppelabzug',
+    description: 'Hat sein Antrag keinen angelegten Störfall, wird an jedem geraden Rundenende (Runde 2, 4, 6, 8) 1 zusätzliche Marke entfernt.'
+  }
+];
+
+export const MODERNIZATIONS = [
+  // Digitalisierung
+  {
+    id: 'digi_vorbereitung',
+    name: 'Biometrische Voraberfassung (Self-Service-Terminal)',
+    type: 'Digitalisierung',
+    cost: 5,
+    icon: '🖥️',
+    description: 'Der erste pro Runde zugewiesene Antrag startet mit 1 Marke weniger (1 statt 2).'
+  },
+  {
+    id: 'digi_registerschnittstelle',
+    name: 'NOBID- & Bundesdruckerei-Live-Schnittstelle',
+    type: 'Digitalisierung',
+    cost: 4,
+    icon: '🌐',
+    description: 'Einmal pro Runde darfst du das Hinzufügen einer Bearbeitungsmarke durch einen fremden Störfall verhindern.'
+  },
+  {
+    id: 'digi_terminpruefung',
+    name: 'Automatisierte ICAO-Konformitätsprüfung',
+    type: 'Digitalisierung',
+    cost: 3,
+    icon: '🤖',
+    description: 'Wenn du in deinem Zug nur den Pflichtantrag (1 Fall) annimmst, ziehe danach 1 Aktionskarte und lege 1 Handkarte ab.'
+  },
+
+  // Infrastruktur
+  {
+    id: 'infra_lichtbildterminal',
+    name: 'Modernes 4-Finger-Flachbettscanner-Terminal',
+    type: 'Infrastruktur',
+    cost: 4,
+    icon: '🖐️',
+    description: 'Die erste positive Aktion auf einen aktiven Antrag kostet pro Runde 1 Zeit weniger (mindestens 0 Zeit).'
+  },
+  {
+    id: 'infra_ausweicharbeitsplatz',
+    name: 'Mobiler Biometrie-Koffer (Ausweichplatz)',
+    type: 'Infrastruktur',
+    cost: 5,
+    icon: '💼',
+    description: 'Einmal pro Partie: Ein 3. Antrag darf für eine Runde als aktiv bearbeitet werden (zieht am Rundenende -1 Marke ab).'
+  },
+  {
+    id: 'infra_terminmanagement',
+    name: 'Smartes eID-Terminmanagement mit Push-Aufruf',
+    type: 'Infrastruktur',
+    cost: 3,
+    icon: '📱',
+    description: 'Für die Zustände Andrang und Überlastung zählt deine Warteschlange, als hätte sie 1 Antrag weniger. (Schlussmalus unverändert).'
+  },
+
+  // Schulung (wird einem Schreibtisch 1 oder 2 zugeordnet)
+  {
+    id: 'schulung_fachverfahren',
+    name: 'Fachverfahren „Pass/Ausweis 4.0“ kompakt',
+    type: 'Schulung',
+    cost: 3,
+    icon: '📚',
+    requiresDesk: true,
+    description: 'Einmal pro Runde: Zahle 1 Zeit weniger für eine positive Aktion auf den zugeordneten Schreibtisch.'
+  },
+  {
+    id: 'schulung_sonderfaelle',
+    name: 'Umgang mit Sensor-Artefakten & Sonderfällen',
+    type: 'Schulung',
+    cost: 4,
+    icon: '🔍',
+    requiresDesk: true,
+    description: 'Der erste Störfall pro Runde auf den zugeordneten Schreibtisch verliert seinen Nebeneffekt (reine Markenänderungen bleiben).'
+  },
+  {
+    id: 'schulung_triage',
+    name: 'Biometrie-Triage & Arbeitsorganisation',
+    type: 'Schulung',
+    cost: 4,
+    icon: '⚡',
+    requiresDesk: true,
+    description: 'Bei Andrang (Warteschlange ≥ 3): Nach Abschluss eines Antrags darf sofort der nächste Fall nachrücken und verliert sofort 1 Marke.'
+  }
+];
+
+export const START_DECK = [
+  {
+    id: 'start_routine_1',
+    name: 'Routinegriff (Druckluft & Scanner)',
+    type: 'Hilfe',
+    cost: 1,
+    icon: '✨',
+    description: 'Entferne 1 Bearbeitungsmarke von einem eigenen aktiven Antrag.'
+  },
+  {
+    id: 'start_routine_2',
+    name: 'Routinegriff (Druckluft & Scanner)',
+    type: 'Hilfe',
+    cost: 1,
+    icon: '✨',
+    description: 'Entferne 1 Bearbeitungsmarke von einem eigenen aktiven Antrag.'
+  },
+  {
+    id: 'start_rueckfrage',
+    name: 'Kollegiale Rückfrage am Kaffeeautomaten',
+    type: 'Organisation',
+    cost: 0,
+    icon: '☕',
+    description: 'Ziehe 1 Karte vom Deck, lege danach 1 Handkarte auf deine Ablage.'
+  },
+  {
+    id: 'start_priorisieren',
+    name: 'Priorisieren im Warteraum',
+    type: 'Organisation',
+    cost: 1,
+    icon: '📋',
+    description: 'Tausche einen deiner aktiven Anträge mit dem ersten Antrag deiner Warteschlange.'
+  },
+  {
+    id: 'start_rueckruf',
+    name: 'Plausibilitätsprüfung vorab',
+    type: 'Hilfe',
+    cost: 1,
+    icon: '🛡️',
+    description: 'Schutzschild: Verhindere, dass in diesem Zug eine Bearbeitungsmarke auf einen eigenen Schreibtisch gelegt wird.'
+  },
+  {
+    id: 'start_unklare_zustaendigkeit',
+    name: 'Unklare Passregister-Zuständigkeit',
+    type: 'Störfall',
+    cost: 2,
+    icon: '⚠️',
+    description: 'Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Antrag. (Wird bei Abschluss übergeben).'
+  }
+];
+
+export const MARKET_CARDS = [
+  // Hilfe
+  {
+    id: 'm_icao_norm',
+    name: 'ICAO-Norm perfekt getroffen',
+    type: 'Hilfe',
+    cost: 1,
+    copies: 4,
+    icon: '📐',
+    tag: 'Normalbetrieb-Bonus',
+    description: 'Entferne 1 Bearbeitungsmarke von einem aktiven Antrag. Bei Normalbetrieb (Warteschlange ≤ 2) kostet diese Karte 0 Zeit.'
+  },
+  {
+    id: 'm_medienbruch',
+    name: 'Sensor gereinigt & Medienbruch behoben',
+    type: 'Hilfe',
+    cost: 2,
+    copies: 3,
+    icon: '🧽',
+    tag: 'Störfall-Beseitigung',
+    description: 'Entferne 1 Marke von einem eigenen Antrag und entsorge anschließend sofort einen fremden Störfall an diesem Antrag.'
+  },
+  {
+    id: 'm_amtshilfe',
+    name: 'Amtshilfe an der Scan-Station',
+    type: 'Hilfe',
+    cost: 1,
+    copies: 3,
+    icon: '🤝',
+    tag: 'Doppelschlag',
+    description: 'Entferne je 1 Bearbeitungsmarke von beiden eigenen aktiven Schreibtischen. Du ziehst nächste Runde 1 Karte weniger.'
+  },
+  {
+    id: 'm_fingerabdruck_politur',
+    name: 'Handcreme-Ausgabe & Sensor-Politur',
+    type: 'Hilfe',
+    cost: 1,
+    copies: 3,
+    icon: '🧴',
+    tag: 'Andrang-Synergie',
+    description: 'Entferne 1 Marke von einem aktiven Fall. Falls du im Zustand Andrang (≥3) bist, ziehe zusätzlich 1 Karte.'
+  },
+  {
+    id: 'm_iris_express',
+    name: 'Express-Iris-Abgleich',
+    type: 'Hilfe',
+    cost: 2,
+    copies: 3,
+    icon: '👁️',
+    tag: 'Turbo-Abschluss',
+    description: 'Entferne 2 Marken von einem eigenen Antrag, sofern an diesem Schreibtisch kein Störfall anliegt.'
+  },
+  {
+    id: 'm_bundesdruckerei_express',
+    name: 'Express-Freigabe Bundesdruckerei',
+    type: 'Hilfe',
+    cost: 1,
+    copies: 3,
+    icon: '🚀',
+    tag: 'Rückvergütung',
+    description: 'Entferne 1 Marke von einem aktiven Antrag. Falls der Fall dadurch 0 Marken hat, erhalte sofort 1 Zeit zurück.'
+  },
+
+  // Organisation
+  {
+    id: 'm_tagesplan',
+    name: 'Tagesplan & Wartenummern neu sortiert',
+    type: 'Organisation',
+    cost: 0,
+    copies: 4,
+    icon: '🔄',
+    tag: 'Agil',
+    description: 'Tausche die beiden aktiven Anträge untereinander ODER tausche einen aktiven mit dem 1. wartenden Antrag.'
+  },
+  {
+    id: 'm_projektgruppe',
+    name: 'Projektgruppe Biometrie-Upgrade',
+    type: 'Organisation',
+    cost: 2,
+    copies: 4,
+    icon: '🏗️',
+    tag: 'Modernisierungs-Turbo',
+    description: 'Lege sofort 2 Zeit-Fortschritt auf eine deiner begonnenen Modernisierungen.'
+  },
+  {
+    id: 'm_aktenbereinigung',
+    name: 'DS-GVO-Löschroutine & Aktenbereinigung',
+    type: 'Organisation',
+    cost: 2,
+    copies: 3,
+    icon: '🗑️',
+    tag: 'Deck-Optimierung',
+    description: 'Entsorge diese Karte und eine weitere Karte aus deiner Hand oder deinem Ablagestapel dauerhaft aus dem Spiel.'
+  },
+  {
+    id: 'm_schulungsoffensive',
+    name: 'Spontaner Biometrie-Workshop',
+    type: 'Organisation',
+    cost: 1,
+    copies: 3,
+    icon: '🎓',
+    tag: 'Kartenvorteil',
+    description: 'Ziehe sofort 2 Aktionskarten von deinem Deck. Lege danach 1 Handkarte auf deinen Ablagestapel.'
+  },
+  {
+    id: 'm_dienstanweisung',
+    name: 'Dienstanweisung zur Beschleunigung',
+    type: 'Organisation',
+    cost: 0,
+    copies: 3,
+    icon: '📜',
+    tag: 'Überstunden',
+    description: 'Erhalte sofort 1 zusätzliche Zeit in diesem Zug. In der nächsten Runde ziehst du dafür 1 Karte weniger.'
+  },
+
+  // Störfall
+  {
+    id: 'm_passfoto_schattenwurf',
+    name: 'Passfoto abgelehnt: Schattenwurf!',
+    type: 'Störfall',
+    cost: 2,
+    copies: 4,
+    icon: '📸',
+    tag: 'Störfall · Übergabe',
+    description: 'Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Schreibtisch. (Max. 4 Marken pro Fall).'
+  },
+  {
+    id: 'm_fingerkuppen_abrieb',
+    name: 'Sensorfehler: Fingerkuppen abgenutzt',
+    type: 'Störfall',
+    cost: 2,
+    copies: 4,
+    icon: '🖐️',
+    tag: 'Störfall · Übergabe',
+    description: 'Störfall: Lege 1 Bearbeitungsmarke auf einen fremden aktiven Schreibtisch. Der Betroffene muss nachjustieren.'
+  },
+  {
+    id: 'm_iris_verweigert',
+    name: 'Bürger verweigert Iris-Scan',
+    type: 'Störfall',
+    cost: 1,
+    copies: 3,
+    icon: '🛑',
+    tag: 'Störfall · Blockade',
+    description: 'Störfall: Der betroffene fremde Antrag verliert am nächsten Rundenende keine Bearbeitungsmarke.'
+  },
+  {
+    id: 'm_rueckfrage_zertifikat',
+    name: 'Rückfrage der Pass-Zertifizierungsstelle',
+    type: 'Störfall',
+    cost: 2,
+    copies: 3,
+    icon: '🔒',
+    tag: 'Störfall · Stummschaltung',
+    description: 'Störfall: Lege 1 Marke auf den fremden Antrag. Die dauerhafte Personalfähigkeit dieses Schreibtischs ist bis Rundenende inaktiv.'
+  },
+  {
+    id: 'm_bundesdruckerei_offline',
+    name: 'Live-Sync zur Bundesdruckerei fehlgeschlagen',
+    type: 'Störfall',
+    cost: 3,
+    copies: 3,
+    icon: '💥',
+    tag: 'Störfall · Totalblockade',
+    description: 'Störfall: Der betroffene Fall wird am Rundenende nicht bearbeitet. (Darf nicht auf Fälle mit nur 1 Marke gespielt werden).'
+  },
+
+  // Reaktion
+  {
+    id: 'm_doch_zustaendig',
+    name: 'Doch zuständig (Gültiges Ersatzdokument)',
+    type: 'Reaktion',
+    cost: 1,
+    copies: 3,
+    icon: '🛡️',
+    tag: 'Reaktion · Neutralisieren',
+    description: 'Reaktion: Neutralisiere einen gerade gespielten fremden Störfall. Die Störfallkarte geht auf die Ablage des Angreifers.'
+  },
+  {
+    id: 'm_pragmatisch',
+    name: 'Pragmatische Zwischenlösung (Manuelle Freigabe)',
+    type: 'Reaktion',
+    cost: 1,
+    copies: 3,
+    icon: '⚡',
+    tag: 'Reaktion · Schadensbegrenzung',
+    description: 'Reaktion: Ein fremder Effekt, der die Bearbeitung am Rundenende verhindert, legt stattdessen genau 1 Marke auf den Fall.'
+  }
+];
+
+export const REQUEST_CARDS = [
+  {
+    title: 'Express-Reisepass mit 3D-Gesichtsscan',
+    flavor: '„Abflug morgen früh um 6 Uhr. Die biometrische Passkontrolle in Singapur verzeiht keine Fehler.“'
+  },
+  {
+    title: 'Fingerabdruck-Nacherfassung für ePerso',
+    flavor: '„Nach 20 Jahren Gartenarbeit erkennt der optische Sensor die Papillarlinien nur noch als abstrakte Kunst.“'
+  },
+  {
+    title: 'Passbild-Korrektur: Lächelverbot missachtet',
+    flavor: '„Die Mundwinkel waren 1,2 Millimeter zu hoch für den unerbittlichen ICAO-Konformitäts-Algorithmus.“'
+  },
+  {
+    title: 'Neugeborenen-Erstregistrierung & Iris-Abgleich',
+    flavor: '„Das Baby blinzelte genau in der Millisekunde des Infrarot-Blitzes. Versuch Nummer 8.“'
+  },
+  {
+    title: 'Verlustanzeige mit eID-Sperrung',
+    flavor: '„Portemonnaie auf dem Bürgerfest verloren – sicherheitshalber auch alle FIDO2-Zertifikate widerrufen.“'
+  },
+  {
+    title: 'Biometrischer Grenzgänger-Pass (EasyPASS)',
+    flavor: '„Täglich über die Grenze pendeln, aber das Lesegerät verlangt jedes Mal eine manuelle Neukalibrierung.“'
+  },
+  {
+    title: 'Führerschein-Umtausch mit digitalem Lichtbildabgleich',
+    flavor: '„Das Foto auf dem grauen Lappen stammt aus 1982 – die KI vermutet einen Zeitreise-Betrug.“'
+  },
+  {
+    title: 'Wohnsitzanmeldung mit digitalem Meldeschein',
+    flavor: '„Der QR-Code auf der Wohnungsgeberbestätigung ist mit Kaffee bekleckert und nicht mehr lesbar.“'
+  },
+  {
+    title: 'Kinderreisepass-Aktualisierung (Wachstumsschub)',
+    flavor: '„In zwei Monaten 8 cm gewachsen – das Gesichtserkennungssystem schlägt Alarm wegen Gestaltwechsel.“'
+  },
+  {
+    title: 'Notfall-Reisedokument an der Flughafengrenze',
+    flavor: '„Zwei Daumenabdrücke und ein flehentlicher Blick genügen, wenn der Bundesdruckerei-Server mitspielt.“'
+  },
+  {
+    title: 'PIN-Rücksetzbrief für Online-Ausweisfunktion',
+    flavor: '„Der Briefumschlag mit dem Freischaltcode liegt garantiert im allergeheimsten Ordner der Wohnung.“'
+  },
+  {
+    title: 'Vor-Ort-Fotoautomat: Brillen-Reflexion',
+    flavor: '„Der Automat fordert zum fünften Mal: \'Bitte Brille abnehmen, Scheitel korrigieren und neutral schauen!\'“'
+  },
+  {
+    title: 'Namensänderung nach Eheschließung mit Zertifikats-Update',
+    flavor: '„Alle Nachweise liegen lückenlos vor – nur die Software streikt beim Doppelnamen mit Umlauten.“'
+  },
+  {
+    title: 'Visum-Verlängerung mit 10-Finger-Scan',
+    flavor: '„Der rechte Ringfinger hat Pflaster. Jetzt muss eine amtliche Ausnahmegenehmigung her.“'
+  },
+  {
+    title: 'Diplomatenpass-Erneuerung (Sonderprotokoll)',
+    flavor: '„Erhöhte Verschlüsselungsstufe, aber die Schnittstelle im Bürgeramt läuft noch über Kupferkabel.“'
+  },
+  {
+    title: 'Zweitwohnsitz-Steuererklärung & eID-Abgleich',
+    flavor: '„Die Steuerberechnung klappt sofort, aber das Register verlangt ein zweites biometrisches Passbild.“'
+  },
+  {
+    title: 'Vorläufiger Personalausweis vor Kreuzfahrt',
+    flavor: '„Gültigkeit: 3 Monate. Gedruckt auf speziellem Sicherheitspapier mit echtem Stempelfett.“'
+  },
+  {
+    title: 'Gewerbeummeldung mit Authentifizierungs-Token',
+    flavor: '„Der USB-Stick mit dem Behörden-Zertifikat wurde versehentlich als Werbegeschenk formatiert.“'
+  },
+  {
+    title: 'Identitätsfeststellung nach verpasstem Venenscan',
+    flavor: '„Der Bürger beteuert, noch dieselbe Person wie vor 5 Jahren zu sein. Das System verlangt Zeugen.“'
+  },
+  {
+    title: 'Ausstellung eines Dienstausweises mit RFID-Chip',
+    flavor: '„Öffnet alle Türen im Rathaus – außer der Kantine, weil der Speiseplan-Server offline ist.“'
+  },
+  {
+    title: 'Biometrischer Seefahrtsausweis',
+    flavor: '„Hautkontakt mit Salzwasser führt zu erhöhter Fehlerrate am kapazitiven Fingersensor.“'
+  },
+  {
+    title: 'Echtheitsprüfung ausländischer Geburtsurkunden',
+    flavor: '„Beglaubigte Übersetzung mit Apostille, aber die Tinte glänzt nicht im korrekten UV-Spektrum.“'
+  },
+  {
+    title: 'Korrektur der Meldeanschrift im Chip-Speicher',
+    flavor: '„Der Aufkleber für die Rückseite klebt schief, aber die internen Bits stimmen millimetergenau.“'
+  },
+  {
+    title: 'Sonderausweis für Berufsfeuerwehr & Katastrophenschutz',
+    flavor: '„Rußpartikel an den Fingerkuppen verlangen eine manuelle Freigabe durch den Sachgebietsleiter.“'
+  },
+  {
+    title: 'Erstbeantragung Personalausweis mit 16 Jahren',
+    flavor: '„Der erste eigene Ausweis. Die Unterschrift auf dem Signaturpad wurde dreimal wiederholt.“'
+  },
+  {
+    title: 'Registerabgleich nach Doppelstaatsbürgerschafts-Reform',
+    flavor: '„Zwei Pässe, zwei Schreibweisen des Nachnamens, ein ratloses NOBID-Verfahren.“'
+  },
+  {
+    title: 'Express-Abholung am automatischen 24/7-Ausgabeterminal',
+    flavor: '„Das Terminal verlangt SMS-Code, PIN und Fingerabdruck, spuckt aber zuerst eine Quittung aus.“'
+  },
+  {
+    title: 'Verlängerung Jagdschein mit Zuverlässigkeitsprüfung',
+    flavor: '„Automatische Abfrage im Nationalen Waffenregister – Ladebalken steht bei 99 %.“'
+  },
+  {
+    title: 'Parkausweis für Schwerbehinderte mit QR-Verifikation',
+    flavor: '„Das Dokument ist laminiert, der QR-Code spiegelt in der Windschutzscheibe.“'
+  },
+  {
+    title: 'Beglaubigung von Zeugniskopien mit Siegel-Scan',
+    flavor: '„Prägestempel muss im 45-Grad-Winkel unter die Dokumentenkamera gehalten werden.“'
+  },
+  {
+    title: 'Führungszeugnis für Ehrenamtliche im Sportverein',
+    flavor: '„Befreiung von den Gebühren nachgewiesen, aber der Vereinssiegel-Stempel war zu schwach.“'
+  },
+  {
+    title: 'Nachträgliche Aktivierung der eID-Funktion',
+    flavor: '„Vor 8 Jahren deaktiviert, jetzt soll die Steuererklärung plötzlich volldigital laufen.“'
+  },
+  {
+    title: 'Meldebescheinigung für Bankkredit',
+    flavor: '„Der Banker will ein Original mit Nassunterschrift, der Bürger hat nur das PDF auf dem Smartphone.“'
+  },
+  {
+    title: 'Eintragung eines Ordens- oder Künstlernamens',
+    flavor: '„\'DJ Amtsschimmel\' soll in das Passregister eingetragen werden. Drei Fachaufsichten beraten.“'
+  },
+  {
+    title: 'Erfassung biometrischer Daten für Mobilitätskarte',
+    flavor: '„Senioren-Monatskarte mit Fotoabgleich am Bus-Entwerter. Die Schlange wird länger.“'
+  },
+  {
+    title: 'Rückgabe ungültiger Dokumente zur Vernichtung',
+    flavor: '„Mit der amtlichen Lochzange die Chip-Antenne durchtrennen – der befriedigendste Moment des Tages.“'
+  },
+  {
+    title: 'Korrektur des Geburtsorts (Gemeindereform 1974)',
+    flavor: '„Das Dorf gehört seit 50 Jahren zur Nachbarstadt, im Taufregister steht aber der alte Name.“'
+  },
+  {
+    title: 'Ausstellung eines Reiseausweises für Staatenlose',
+    flavor: '„Hochkomplexes Genehmigungsverfahren mit ministerieller Sonderfreigabe.“'
+  },
+  {
+    title: 'Vollmachts-Hinterlegung für Vorsorge und Betreuung',
+    flavor: '„Elektronisches Notarregister antwortet innerhalb von 0,4 Sekunden – alle Beschäftigten staunen.“'
+  },
+  {
+    title: 'Wahlbenachrichtigung verloren: Wahlschein-Antrag',
+    flavor: '„Sonntag ist Bundestagswahl. Identitätsprüfung via Fingerkuppenabgleich am Schalter.“'
+  },
+  {
+    title: 'Zertifikatswechsel am mobilen Koffer-Arbeitsplatz',
+    flavor: '„Hausbesuch im Seniorenheim mit dem 14-Kilo-Hightech-Koffer. Die Batterie zeigt 12 %.“'
+  },
+  {
+    title: 'Erfassung der Pupillendistanz für Dienstbrille',
+    flavor: '„Die Bildschirmarbeitsplatzverordnung verlangt höchste optische Präzision.“'
+  },
+  {
+    title: 'Ausweisprüfung für Eheschließung im Standesamt',
+    flavor: '„Biometrischer Check im Nachbarzimmer, damit die Trauung pünktlich beginnen kann.“'
+  },
+  {
+    title: 'Abgleich nach Namens-Kombination im Melderegister',
+    flavor: '„Dreifach-Vorname ohne Bindestrich – die Datenbank sortiert den Mittelnamen als Spitznamen ein.“'
+  },
+  {
+    title: 'Grenzübertrittsausweis für Binnenschiffer',
+    flavor: '„Wasserfeste Dokumentenkarte mit gehärtetem Kryptochip.“'
+  },
+  {
+    title: 'Identitätsüberprüfung nach Phishing-Verdacht',
+    flavor: '„Gefälschte Behörden-SMS erhalten – der Bürger möchte seinen Chip persönlich desinfizieren lassen.“'
+  },
+  {
+    title: 'Status-Abfrage: Passlieferung aus Berlin',
+    flavor: '„Der Kurier der Bundesdruckerei steht angeblich im Stau auf der A7.“'
+  },
+  {
+    title: 'Sonderprüfung: Zwillingsverwechslung im Passregister',
+    flavor: '„Eineiige Zwillinge mit identischem Geburtsdatum bringen das biometrische Matching an seine Grenzen.“'
+  }
+];
+
+export const BOT_NAMES = [
+  { name: 'Bezirksamt Groß-Metropole', personality: 'balanced', icon: '🏙️' },
+  { name: 'Kommune Bad Bürokratie', personality: 'aggressive', icon: '🏰' },
+  { name: 'Bürgerbüro Digitalien', personality: 'modernizer', icon: '🚀' },
+  { name: 'Gemeinde Hintertupfingen', personality: 'rusher', icon: '🌲' }
+];
